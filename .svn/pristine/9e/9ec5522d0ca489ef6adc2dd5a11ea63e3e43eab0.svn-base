@@ -1,0 +1,18 @@
+package kr.happyjob.study.sales.dao;
+
+import java.util.List;
+import java.util.Map;
+
+import kr.happyjob.study.hwang.model.HnoticeModel;
+import kr.happyjob.study.sales.model.MmRevenueModel;
+import kr.happyjob.study.system.model.ComnCodUtilModel;
+import kr.happyjob.study.system.model.ComnDtlCodModel;
+import kr.happyjob.study.system.model.ComnGrpCodModel;
+
+public interface MmRevenueDao {
+
+	/** 월별 매출 목록 조회 */
+	public List<MmRevenueModel> mmRevenuelist(Map<String, Object> paramMap) throws Exception;
+		
+	
+}

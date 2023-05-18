@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="kr.happyjob.study.sales.dao.MmRevenueDao">
+
+	<!-- 월별 주문건수, 매출, 영업비, 영업이익, 영업이익률  조회 -->
+	<select id="mmRevenuelist" resultType="kr.happyjob.study.sales.model.MmRevenueModel">
+
+		select ex.ym_date 
+		      ,cont.order_amt
+		      ,cont.outgo
+		      ,ex.sales_exp
+		      ,(cont.outgo - sal.realpay) as sales_profit
+		      , (cont.outgo - sal.realpay) / cont.outgo as profit_rate
+		      
+		  from (
+		        select count(order_cd) as order_amt
+		              ,sum(total_price) as outgo
+		              ,CONCAT(YEAR(contract_date), '-', MONTH(contract_date)) ym_date
+		        from tb_contract
+		        group by ym_date
+		        ) cont
+		        right outer join (
+		                    select sum(exp_spent) as sales_exp 
+		                         , CONCAT(YEAR(yn_date), '-', MONTH(yn_date)) ym_date
+		                      from tb_expense
+		                     where exp_yn = 'y' 
+		                  group by ym_date
+		                    ) ex on cont.ym_date = ex.ym_date
+		        left outer join (
+		                              select sum(real_pay) as realpay
+		                                    ,CONCAT(YEAR(salary_date), '-', MONTH(salary_date)) ym_date
+		                                from tb_salary_info
+		                            group by ym_date
+		                         ) sal on cont.ym_date = sal.ym_date;		
+
+	</select>
+	
+	
+	
+	
+	
+	
+	
+	
+</mapper>
