@@ -32,25 +32,25 @@
 	
 	<!-- 부서 정보 저장 -->
 	<insert id="deptnewsave">
-	     <selectKey resultType="int" keyProperty="detail_code" order="BEFORE">
+        <selectKey resultType="int" keyProperty="detail_code" order="BEFORE">
              select ifnull(max(cast((detail_code) as unsigned)),0) + 1  from tb_detail_code where group_code = 'dept_cd'
          </selectKey> 
-			   insert into tb_detail_code
-			               (
-			                  detail_code
-			                 ,detail_name
-			                 ,group_code
-			                 ,use_yn
-			               )
-			        values(
-			                  
-			                 #{detail_code}
-			                ,#{detail_name}
-			                ,'dept_cd'
-			                ,'Y' 
-			                 
-			              );
-	</insert>
+            insert into tb_detail_code
+                        (
+                           detail_code
+                          ,detail_name
+                          ,group_code
+                          ,use_yn
+                        )
+                 values(
+                           
+                          #{detail_code}
+                         ,#{detail_name}
+                         ,'dept_cd'
+                         ,'Y' 
+                          
+                       );
+   </insert>
 	
 	<!-- 부서 정보 수정 -->
 	<update id="deptnewupdate"> 

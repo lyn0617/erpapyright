@@ -1,7 +1,5 @@
 package kr.happyjob.study.hwang.controller;
 
-import java.io.File;
-import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -11,7 +9,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,7 +20,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import kr.happyjob.study.common.comnUtils.ComnCodUtil;
 import kr.happyjob.study.hwang.model.HnoticeModel;
-import kr.happyjob.study.hwang.service.HnoticeService;;
+import kr.happyjob.study.hwang.service.HnoticeService;
 
 @Controller
 @RequestMapping("/hwang/")
@@ -50,6 +47,7 @@ public class HnoticeController {
 		logger.info("+ Start " + className + ".hnotice");
 		logger.info("   - paramMap : " + paramMap);
 		
+		
 		model.addAttribute("loginId", (String) session.getAttribute("loginId"));
 		model.addAttribute("userNm", (String) session.getAttribute("userNm"));
 		
@@ -65,9 +63,8 @@ public class HnoticeController {
 		logger.info("+ Start " + className + ".hnoticelist");
 		logger.info("   - paramMap : " + paramMap);
 		
-		// 1     0
-		// 2     10
-		// 3     20		
+		
+		// 페이징 처리 1페이지 0부터 , 2페이지 10부터
 		
 		int pageSize = Integer.parseInt((String) paramMap.get("pageSize"));
 		int cpage = Integer.parseInt((String) paramMap.get("cpage"));
@@ -102,10 +99,8 @@ public class HnoticeController {
 		
 		if("I".equals(action)) {
 			hnoticeService.hnoticenewsave(paramMap);
-		} else if("U".equals(action)) {
+		} else if ("U".equals(action)){
 			hnoticeService.hnoticenewupdate(paramMap);
-		} else if("D".equals(action)) {
-			hnoticeService.hnoticenewdelete(paramMap);
 		}
 		
 		
@@ -120,6 +115,7 @@ public class HnoticeController {
 		return returnmap;
 	}		
 	
+	
 	@RequestMapping("detailone.do")
 	@ResponseBody
 	public Map<String, Object> detailone(Model model, @RequestParam Map<String, Object> paramMap, HttpServletRequest request,
@@ -127,39 +123,9 @@ public class HnoticeController {
 		
 		logger.info("+ Start " + className + ".detailone");
 		logger.info("   - paramMap : " + paramMap);		
-				
-		HnoticeModel detailone = hnoticeService.detailone(paramMap);
-		
-		Map<String, Object> returnmap = new HashMap<String, Object>();
-		
-		returnmap.put("result", "SUCCESS");
-		returnmap.put("detailone", detailone);
 		
 		
-		logger.info("+ End " + className + ".detailone");
-
-		return returnmap;
-	}
-	
-	@RequestMapping("hnoticesavefile.do")
-	@ResponseBody
-	public Map<String, Object> hnoticesavefile(Model model, @RequestParam Map<String, Object> paramMap, HttpServletRequest request,
-			HttpServletResponse response, HttpSession session) throws Exception {
-		
-		logger.info("+ Start " + className + ".hnoticesavefile");
-		logger.info("   - paramMap : " + paramMap);		
-		
-		paramMap.put("loginId", (String) session.getAttribute("loginId"));
-		
-		String action = (String) paramMap.get("action");
-		
-		if("I".equals(action)) {
-			hnoticeService.hnoticenewsavefile(paramMap, request);
-		} else if("U".equals(action)) {
-			hnoticeService.hnoticenewupdatefile(paramMap, request);
-		} else if("D".equals(action)) {
-			hnoticeService.hnoticenewdeletefile(paramMap);
-		}
+		HnoticeModel detailone =  hnoticeService.detailone(paramMap);
 		
 		
 		
@@ -168,36 +134,9 @@ public class HnoticeController {
 		returnmap.put("result", "SUCCESS");
 		
 		
-		logger.info("+ End " + className + ".hnoticesavefile");
+		logger.info("+ End " + className + ".hnoticesave");
 
 		return returnmap;
 	}	
-	
-	@RequestMapping("hnoticefiledownaload.do")
-	public void hnoticefiledownaload(Model model, @RequestParam Map<String, Object> paramMap, HttpServletRequest request,
-			HttpServletResponse response, HttpSession session) throws Exception {
-		
-		logger.info("+ Start " + className + ".hnoticefiledownaload");
-		logger.info("   - paramMap : " + paramMap);		
-		
-		HnoticeModel detailone = hnoticeService.detailone(paramMap);
-		
-		String filename = detailone.getFile_name();
-		String filemadd = detailone.getFile_madd();
-		
-        byte fileByte[] = FileUtils.readFileToByteArray(new File(filemadd));
-		
-	    response.setContentType("application/octet-stream");
-	    response.setContentLength(fileByte.length);
-	    response.setHeader("Content-Disposition", "attachment; fileName=\"" + URLEncoder.encode(filename,"UTF-8")+"\";");
-	    response.setHeader("Content-Transfer-Encoding", "binary");
-	    response.getOutputStream().write(fileByte);
-		
-		logger.info("+ End " + className + ".hnoticefiledownaload");
-
-		return;
-	}	
-	
-	
 	
 }

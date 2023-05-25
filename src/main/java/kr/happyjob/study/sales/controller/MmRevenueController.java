@@ -35,6 +35,7 @@ public class MmRevenueController {
 	
 	//combo box select 값
 	private String combo;
+	private String selectyear;/////
 	
 	/**
 	 * 월별매출관리 관리 초기화면
@@ -44,10 +45,15 @@ public class MmRevenueController {
 			HttpServletResponse response, HttpSession session) throws Exception {
 		
 		//날짜 형식 설정
-		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM");
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy");
 		
 		//한국 시간 설정
-		Calendar ca1 = Calendar.getInstance(Locale.KOREA);		
+		Calendar ca1 = Calendar.getInstance(Locale.KOREA);
+		
+		selectyear = sdf.format(ca1.getTime());
+		ca1.setTime(ca1.getTime());
+		System.out.println("확인 : "+ selectyear);
+		model.addAttribute("selectyear",selectyear);
 		
 		return "sales/mmRevenue/mmRevenue";
 	}

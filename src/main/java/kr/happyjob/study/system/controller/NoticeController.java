@@ -1,13 +1,17 @@
 package kr.happyjob.study.system.controller;
 
+import java.io.File;
+import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,8 +21,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import kr.happyjob.study.common.comnUtils.ComnCodUtil;
 import kr.happyjob.study.system.model.NoticeModel;
-import kr.happyjob.study.system.service.NoticeService;
+import kr.happyjob.study.system.service.NoticeService;;
 
 @Controller
 @RequestMapping("/system/")
@@ -33,174 +38,338 @@ public class NoticeController {
 	// Get class name for logger
 	private final String className = this.getClass().toString();
 	
-	
-	
-	// 처음 로딩될 때 공지사항 연결
+	// 공지사항 초기화면
 	@RequestMapping("notice.do")
-	public String init(Model model, @RequestParam Map<String, Object> paramMap, HttpServletRequest request,
+	public String notice(Model model, @RequestParam Map<String, Object> paramMap, HttpServletRequest request,
 			HttpServletResponse response, HttpSession session) throws Exception {
+		
+		logger.info("+ Start " + className + ".hnotice");
+		logger.info("   - paramMap : " + paramMap);
+		
+		model.addAttribute("loginId", (String) session.getAttribute("loginId"));
+		model.addAttribute("userNm", (String) session.getAttribute("userNm"));
+		
+		logger.info("+ End " + className + ".hnotice");
 
-		logger.info("+ Start " + className + ".initNotice");
-		logger.info("   - paramMap : " + paramMap);
-		
-		String loginID = (String) session.getAttribute("loginId");
-		paramMap.put("loginID", loginID);
-		System.out.println(loginID);
-//		paramMap.put("writer", loginID);
-		
-		return "system/notice";
+		return "system/notice/notice";
 	}
 	
-	// 공지사항 리스트 출력
-	@RequestMapping("noticeList.do")
-	public String noticeList(Model model, @RequestParam Map<String, Object> paramMap, 
-			HttpServletRequest request, HttpServletResponse response, HttpSession session) throws Exception {
-		
+	// 공지사항 목록 조회
+	@RequestMapping("noticelist.do")
+	public String noticelist(Model model, @RequestParam Map<String, Object> paramMap, HttpServletRequest request,
+			HttpServletResponse response, HttpSession session) throws Exception {
+			
+		logger.info("+ Start " + className + ".noticelist");
 		logger.info("   - paramMap : " + paramMap);
-		String title = (String) paramMap.get("title");
 		
-		int currentPage = Integer.parseInt((String) paramMap.get("currentPage")); // 현재페이지
-	    int pageSize = Integer.parseInt((String) paramMap.get("pageSize"));
-	    int pageIndex = (currentPage - 1) * pageSize;
+		// 1     0
+		// 2     10
+		// 3     20		
 		
-		paramMap.put("pageIndex", pageIndex);
+		int pageSize = Integer.parseInt((String) paramMap.get("pageSize"));
+		int cpage = Integer.parseInt((String) paramMap.get("cpage"));
+		int pageindex = (cpage - 1) * pageSize;
+		
+		paramMap.put("pageindex", pageindex);
 		paramMap.put("pageSize", pageSize);
-		paramMap.put("title", title);
 		
-		// 공지사항 목록 조회
-		List<NoticeModel> noticeList = noticeService.noticeList(paramMap);
-		model.addAttribute("notice", noticeList);
+		List<NoticeModel> noticelist = noticeService.noticelist(paramMap);
 		
-		// 목록 수 추출해서 보내기
-		int noticeCnt = noticeService.noticeCnt(paramMap);
+		int countnoticelist = noticeService.countnoticelist(paramMap);
 		
-	    model.addAttribute("noticeCnt", noticeCnt);
-	    model.addAttribute("pageSize", pageSize);
-	    model.addAttribute("currentPage",currentPage);
-	    
-	    return "system/noticeList";
+		model.addAttribute("noticelist", noticelist);
+		model.addAttribute("countnoticelist", countnoticelist);
+		
+		logger.info("+ End " + className + ".noticelist");
+
+		return "system/notice/noticelist";
 	}
 	
-	// 공지사항 리스트 출력
-	@RequestMapping("noticeListvue.do")
+	// 공지사항 등록
+	@RequestMapping("noticesave.do")
 	@ResponseBody
-	public Map<String, Object> noticeListvue(Model model, @RequestParam Map<String, Object> paramMap, 
-			HttpServletRequest request, HttpServletResponse response, HttpSession session) throws Exception {
+	public Map<String, Object> noticesave(Model model, @RequestParam Map<String, Object> paramMap, HttpServletRequest request,
+			HttpServletResponse response, HttpSession session) throws Exception {
 		
-		logger.info("   - paramMap : " + paramMap);
-		String title = (String) paramMap.get("title");
+		logger.info("+ Start " + className + ".noticesave");
+		logger.info("   - paramMap : " + paramMap);		
 		
-		int currentPage = Integer.parseInt((String) paramMap.get("currentPage")); // 현재페이지
-	    int pageSize = Integer.parseInt((String) paramMap.get("pageSize"));
-	    int pageIndex = (currentPage - 1) * pageSize;
+		paramMap.put("loginId", (String) session.getAttribute("loginId"));
 		
-		paramMap.put("pageIndex", pageIndex);
-		paramMap.put("pageSize", pageSize);
-		paramMap.put("title", title);
+		String action = (String) paramMap.get("action");
 		
-		// 공지사항 목록 조회
-		List<NoticeModel> noticeList = noticeService.noticeList(paramMap);		
-		// 목록 수 추출해서 보내기
-		int noticeCnt = noticeService.noticeCnt(paramMap);
+		if("I".equals(action)) {
+			noticeService.noticenewsave(paramMap);
+		} else if("U".equals(action)) {
+			noticeService.noticenewupdate(paramMap);
+		} else if("D".equals(action)) {
+			noticeService.noticenewdelete(paramMap);
+		}
 		
-		Map<String, Object> resultMap = new HashMap<String, Object>();
-		resultMap.put("notice", noticeList); // success 용어 담기 
-		resultMap.put("noticeCnt", noticeCnt); // 리턴 값 해쉬에 담기 
-	    resultMap.put("pageSize", pageSize);
-	    resultMap.put("currentPage",currentPage);
-	    
-	    return resultMap;
+		Map<String, Object> returnmap = new HashMap<String, Object>();
+		
+		returnmap.put("result", "SUCCESS");
+		
+		
+		logger.info("+ End " + className + ".noticesave");
+
+		return returnmap;
+	}
+	
+	// 상세조회
+	@RequestMapping("detailone.do")
+	@ResponseBody
+	public Map<String, Object> detailone(Model model, @RequestParam Map<String, Object> paramMap, HttpServletRequest request,
+			HttpServletResponse response, HttpSession session) throws Exception {
+		
+		logger.info("+ Start " + className + ".detailone");
+		logger.info("   - paramMap : " + paramMap);		
+				
+		NoticeModel detailone = noticeService.detailone(paramMap);
+		
+		Map<String, Object> returnmap = new HashMap<String, Object>();
+		
+		returnmap.put("result", "SUCCESS");
+		returnmap.put("detailone", detailone);
+		
+		
+		logger.info("+ End " + className + ".detailone");
+
+		return returnmap;
+	}
+	
+	// 파일 저장
+	@RequestMapping("noticesavefile.do")
+	@ResponseBody
+	public Map<String, Object> noticesavefile(Model model, @RequestParam Map<String, Object> paramMap, HttpServletRequest request,
+			HttpServletResponse response, HttpSession session) throws Exception {
+		
+		logger.info("+ Start " + className + ".noticesavefile");
+		logger.info("   - paramMap : " + paramMap);		
+		
+		paramMap.put("loginId", (String) session.getAttribute("loginId"));
+		
+		String action = (String) paramMap.get("action");
+		
+		if("I".equals(action)) {
+			noticeService.noticenewsavefile(paramMap, request);
+		} else if("U".equals(action)) {
+			noticeService.noticenewupdatefile(paramMap, request);
+		} else if("D".equals(action)) {
+			noticeService.noticenewdeletefile(paramMap);
+		}		
+		
+		Map<String, Object> returnmap = new HashMap<String, Object>();
+		
+		returnmap.put("result", "SUCCESS");
+		
+		
+		logger.info("+ End " + className + ".noticesavefile");
+
+		return returnmap;
 	}	
 	
-	// 공지사항 상세 조회
-	@RequestMapping("detailNotice.do")
-	@ResponseBody
-	public Map<String,Object> detailNotice(Model model, @RequestParam Map<String, Object> paramMap, HttpServletRequest request, HttpServletResponse response, HttpSession session) throws Exception {
-		
-		//System.out.println("상세정보 보기를 위한 param에서 넘어온 값을 찍어봅시다.: " + paramMap);
-		  logger.info("+ Start " + className + ".detailNotice");
-		  logger.info("   - paramMap : " + paramMap);
-		  
-		String result="";
-		
-		// 선택된 게시판 1건 조회 
-		NoticeModel detailNotice = noticeService.noticeDetail(paramMap);
-		
-		if(detailNotice != null) {
-			result = "SUCCESS";  // 성공시 찍습니다. 
-		}else {
-			result = "FAIL / 불러오기에 실패했습니다.";  // null이면 실패입니다.
-		}
-		
-		Map<String, Object> resultMap = new HashMap<String, Object>();
-		resultMap.put("resultMsg", result); // success 용어 담기 
-		resultMap.put("result", detailNotice); // 리턴 값 해쉬에 담기 
-		//resultMap.put("resultComments", comments);
-		System.out.println(detailNotice);
-		
-		logger.info("+ End " + className + ".detailNotice");
-	    
-	    return resultMap;
-	}
-	
-	// 공지사항 신규등록, 업데이트
-	@RequestMapping("noticeSave.do")
-	@ResponseBody
-	public Map<String, Object> noticeSave(Model model, @RequestParam Map<String, Object> paramMap, HttpServletRequest request, HttpServletResponse response, HttpSession session) throws Exception {
-		
-		logger.info("+ Start " + className + ".noticeSave");
-		logger.info("   - paramMap : " + paramMap);
-		
-		String action = (String)paramMap.get("action");
-		String resultMsg = "";
-		
-		// 사용자 정보 설정
-		paramMap.put("loginId", session.getAttribute("loginId"));
-		
-		logger.info("loginId : " + paramMap.get("loginId"));
-		
-		if ("I".equals(action)) {
-			// 그룹코드 신규 저장
-			noticeService.insertNotice(paramMap);
-			resultMsg = "SUCCESS";
-		} else if("U".equals(action)) {
-			// 그룹코드 수정 저장
-			noticeService.updateNotice(paramMap);
-			resultMsg = "UPDATED";
-			System.out.println(paramMap);
-		} else {
-			resultMsg = "FALSE : 등록에 실패하였습니다.";
-		}
-		
-		//결과 값 전송
-		Map<String, Object> resultMap = new HashMap<String, Object>();
-		resultMap.put("resultMsg", resultMsg);
-	    
-	    return resultMap;
-	}
-	
-	// 공지사항 삭제
-	@RequestMapping("noticeDelete.do")
-	@ResponseBody
-	public Map<String, Object> noticeDelete(Model model, @RequestParam Map<String, Object> paramMap, HttpServletRequest request,
+	// 파일 다운로드
+	@RequestMapping("noticefiledownaload.do")
+	public void noticefiledownaload(Model model, @RequestParam Map<String, Object> paramMap, HttpServletRequest request,
 			HttpServletResponse response, HttpSession session) throws Exception {
 		
-		logger.info("+ Start " + className + ".noticeDelete");
-		logger.info("   - paramMap : " + paramMap);
+		logger.info("+ Start " + className + ".noticefiledownaload");
+		logger.info("   - paramMap : " + paramMap);		
+		
+		NoticeModel detailone = noticeService.detailone(paramMap);
+		
+		String filename = detailone.getFile_name();
+		String filemadd = detailone.getFile_madd();
+		
+        byte fileByte[] = FileUtils.readFileToByteArray(new File(filemadd));
+		
+	    response.setContentType("application/octet-stream");
+	    response.setContentLength(fileByte.length);
+	    response.setHeader("Content-Disposition", "attachment; fileName=\"" + URLEncoder.encode(filename,"UTF-8")+"\";");
+	    response.setHeader("Content-Transfer-Encoding", "binary");
+	    response.getOutputStream().write(fileByte);
+		
+		logger.info("+ End " + className + ".noticefiledownaload");
 
-		String result = "SUCCESS";
-		String resultMsg = "삭제 되었습니다.";
-		
-		// 그룹코드 삭제
-		noticeService.deleteNotice(paramMap);
-		
-		Map<String, Object> resultMap = new HashMap<String, Object>();
-		resultMap.put("result", result);
-		resultMap.put("resultMsg", resultMsg);
-		
-		logger.info("+ End " + className + ".noticeDelete");
-		
-		return resultMap;
+		return;
 	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	/**
+	 * 공지사항 관리 초기화면
+	 *//*
+	@RequestMapping("hnotice.do")
+	public String hnotice(Model model, @RequestParam Map<String, Object> paramMap, HttpServletRequest request,
+			HttpServletResponse response, HttpSession session) throws Exception {
+		
+		logger.info("+ Start " + className + ".hnotice");
+		logger.info("   - paramMap : " + paramMap);
+		
+		model.addAttribute("loginId", (String) session.getAttribute("loginId"));
+		model.addAttribute("userNm", (String) session.getAttribute("userNm"));
+		
+		logger.info("+ End " + className + ".hnotice");
+
+		return "hwang/hnotice";
+	}
+	
+	@RequestMapping("hnoticelist.do")
+	public String hnoticelist(Model model, @RequestParam Map<String, Object> paramMap, HttpServletRequest request,
+			HttpServletResponse response, HttpSession session) throws Exception {
+		
+		logger.info("+ Start " + className + ".hnoticelist");
+		logger.info("   - paramMap : " + paramMap);
+		
+		// 1     0
+		// 2     10
+		// 3     20		
+		
+		int pageSize = Integer.parseInt((String) paramMap.get("pageSize"));
+		int cpage = Integer.parseInt((String) paramMap.get("cpage"));
+		int pageindex = (cpage - 1) * pageSize;
+		
+		paramMap.put("pageindex", pageindex);
+		paramMap.put("pageSize", pageSize);
+		
+		List<HnoticeModel> hnoticelist = hnoticeService.hnoticelist(paramMap);
+		
+		int counthnoticelist = hnoticeService.counthnoticelist(paramMap);
+		
+		model.addAttribute("hnoticelist", hnoticelist);
+		model.addAttribute("counthnoticelist", counthnoticelist);
+		
+		logger.info("+ End " + className + ".hnoticelist");
+
+		return "hwang/hnoticelist";
+	}	
+		
+	@RequestMapping("hnoticesave.do")
+	@ResponseBody
+	public Map<String, Object> hnoticesave(Model model, @RequestParam Map<String, Object> paramMap, HttpServletRequest request,
+			HttpServletResponse response, HttpSession session) throws Exception {
+		
+		logger.info("+ Start " + className + ".hnoticesave");
+		logger.info("   - paramMap : " + paramMap);		
+		
+		paramMap.put("loginId", (String) session.getAttribute("loginId"));
+		
+		String action = (String) paramMap.get("action");
+		
+		if("I".equals(action)) {
+			hnoticeService.hnoticenewsave(paramMap);
+		} else if("U".equals(action)) {
+			hnoticeService.hnoticenewupdate(paramMap);
+		} else if("D".equals(action)) {
+			hnoticeService.hnoticenewdelete(paramMap);
+		}
+		
+		
+		
+		Map<String, Object> returnmap = new HashMap<String, Object>();
+		
+		returnmap.put("result", "SUCCESS");
+		
+		
+		logger.info("+ End " + className + ".hnoticesave");
+
+		return returnmap;
+	}		
+	
+	@RequestMapping("detailone.do")
+	@ResponseBody
+	public Map<String, Object> detailone(Model model, @RequestParam Map<String, Object> paramMap, HttpServletRequest request,
+			HttpServletResponse response, HttpSession session) throws Exception {
+		
+		logger.info("+ Start " + className + ".detailone");
+		logger.info("   - paramMap : " + paramMap);		
+				
+		HnoticeModel detailone = hnoticeService.detailone(paramMap);
+		
+		Map<String, Object> returnmap = new HashMap<String, Object>();
+		
+		returnmap.put("result", "SUCCESS");
+		returnmap.put("detailone", detailone);
+		
+		
+		logger.info("+ End " + className + ".detailone");
+
+		return returnmap;
+	}
+	
+	@RequestMapping("hnoticesavefile.do")
+	@ResponseBody
+	public Map<String, Object> hnoticesavefile(Model model, @RequestParam Map<String, Object> paramMap, HttpServletRequest request,
+			HttpServletResponse response, HttpSession session) throws Exception {
+		
+		logger.info("+ Start " + className + ".hnoticesavefile");
+		logger.info("   - paramMap : " + paramMap);		
+		
+		paramMap.put("loginId", (String) session.getAttribute("loginId"));
+		
+		String action = (String) paramMap.get("action");
+		
+		if("I".equals(action)) {
+			hnoticeService.hnoticenewsavefile(paramMap, request);
+		} else if("U".equals(action)) {
+			hnoticeService.hnoticenewupdatefile(paramMap, request);
+		} else if("D".equals(action)) {
+			hnoticeService.hnoticenewdeletefile(paramMap);
+		}
+		
+		
+		
+		Map<String, Object> returnmap = new HashMap<String, Object>();
+		
+		returnmap.put("result", "SUCCESS");
+		
+		
+		logger.info("+ End " + className + ".hnoticesavefile");
+
+		return returnmap;
+	}	
+	
+	@RequestMapping("hnoticefiledownaload.do")
+	public void hnoticefiledownaload(Model model, @RequestParam Map<String, Object> paramMap, HttpServletRequest request,
+			HttpServletResponse response, HttpSession session) throws Exception {
+		
+		logger.info("+ Start " + className + ".hnoticefiledownaload");
+		logger.info("   - paramMap : " + paramMap);		
+		
+		HnoticeModel detailone = hnoticeService.detailone(paramMap);
+		
+		String filename = detailone.getFile_name();
+		String filemadd = detailone.getFile_madd();
+		
+        byte fileByte[] = FileUtils.readFileToByteArray(new File(filemadd));
+		
+	    response.setContentType("application/octet-stream");
+	    response.setContentLength(fileByte.length);
+	    response.setHeader("Content-Disposition", "attachment; fileName=\"" + URLEncoder.encode(filename,"UTF-8")+"\";");
+	    response.setHeader("Content-Transfer-Encoding", "binary");
+	    response.getOutputStream().write(fileByte);
+		
+		logger.info("+ End " + className + ".hnoticefiledownaload");
+
+		return;
+	}	*/
+	
+	
 	
 }

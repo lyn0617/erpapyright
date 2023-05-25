@@ -37,7 +37,7 @@
 			switch (btnId) {
 				
 			    case 'btnSave' :   //저장버튼
-					fn_save();
+			    	deptcheck();
 					break;
 			    case 'btnDelete' :
 			    	$("#action").val("D");  //삭제버튼
@@ -101,54 +101,25 @@
 	}
     
     /* 부서 중복 확인 */
-    async function deptcheck(){
+    function deptcheck(){
     	
     	var data1 = {"detail_name" :$("#detail_name").val()};
-
-    	alert("deptcheck안");
-    	
+    	var senddata;
     	var listcallback = function(returndata) {
-	    	var result2 = false; 
-			//console.log(returndata);
-
-			alert("listcallback안");
-			
-    		if (returndata.result > 0){
-				console.log("중복된 부서 이름");
-				alert("중복된 부서명 입니다.");
-				$('#detail_name').val('');
-				result2 = false;
-    		} else{	
-    		
-				alert("중복 안됨요");
-				result2 = true;
+    		if(returndata == 0){
+    			fn_save();
+    		} else {
+    			alert("부서명이 중복입니다.")
     		}
-			console.log(result2);
-    		return result2;
+    		
+    		
     	}
-  	 
-    	callAjax("/system/check_dept.do", "post", "json", false, data1, listcallback) ;
-    	
-		alert("if문 밖");
-  		/* if(listcallback() != undefined){
-  			alert("if문 안");
-	    	//return listcallback();
-  		} */
+    	    	
+    	callAjax("/system/check_dept.do", "post", "json", "false", data1, listcallback) ;
     }
     
     /* 부서정보 저장 */
 	function fn_save(data) {
-			
-     	if($("#action").val() != "D"){
-					
-     		//console.log(deptcheck()); 
-			if(!deptcheck()) {
-				alert("중복임");
-				return ;
-			}
-			alert("$(action).val() != 'D'");
-    	} 
-		alert("fn_save");
     	
 		if(!fValidate()) {
 			return;
@@ -287,7 +258,6 @@
 	<input type="hidden" name="ssrcdept" id="ssrcdept" value="">
 	<input type="hidden" name="sscpage" id="sscpage" value="">
 	<input type="hidden" name="sspageSize" id="sspageSize" value="">
-	
 	<!-- 모달 배경 -->
 	<div id="mask"></div>
 

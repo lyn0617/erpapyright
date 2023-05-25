@@ -15,6 +15,7 @@ import org.springframework.web.multipart.MultipartHttpServletRequest;
 
 import kr.happyjob.study.accounting.dao.AccountSlipDao;
 import kr.happyjob.study.accounting.model.AccountSlipModel;
+import kr.happyjob.study.accounting.model.AccSlipDetaileModel;
 import kr.happyjob.study.accounting.model.DetileAccountListModel;
 import kr.happyjob.study.accounting.model.MidProductListModel;
 import kr.happyjob.study.accounting.model.ProductListModel;
@@ -95,11 +96,11 @@ public class AccountSlipServiceImpl implements AccountSlipService {
 		return accountSlipDao.midProductList(paramMap);
 	}
 	
-	/** 공지사항 단건 조회 */
-//	@Override
-//	public AccountSlipModel detailone(Map<String, Object> paramMap) throws Exception {
-//		// TODO Auto-generated method stub
-//		return accountSlipDao.detailone(paramMap);
-//	}
+	/** 회계전표 단건 조회 */
+	@Override
+	public List<AccSlipDetaileModel> accSlipDetaile(Map<String, Object> paramMap) throws Exception {
+		// TODO Auto-generated method stub
+		return accountSlipDao.accSlipDetaile(paramMap);
+	}
 	
 }

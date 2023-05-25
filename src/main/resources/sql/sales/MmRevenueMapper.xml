@@ -21,7 +21,7 @@
 		              ,CONCAT(YEAR(contract_date), '-', MONTH(contract_date)) ym_date
 		        from tb_contract
 		        where contract_type = '2'
-		        group by contract_date
+		        group by ym_date
 		        ) cont
 		        left outer join (
 		                    select sum(ai.account_pay) as sales_exp 
@@ -55,7 +55,7 @@
               		  ,MONTH(contract_date) as cmonth
 		        from tb_contract
 		        where contract_type = '2'
-		        group by contract_date
+		        group by ym_date
 		        ) cont
 		        left outer join (
 		                    select sum(ai.account_pay) as sales_exp 
@@ -92,7 +92,7 @@
               		  ,MONTH(contract_date) as cmonth
 		        from tb_contract
 		        where contract_type = '2'
-		        group by contract_date
+		        group by ym_date
 		        ) cont
 		        left outer join (
 		                    select sum(ai.account_pay) as sales_exp 

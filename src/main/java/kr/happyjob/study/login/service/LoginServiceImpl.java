@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 
+import kr.happyjob.study.accounting.model.FileModel;
 import kr.happyjob.study.common.comnUtils.FileUtilCho;
 /*import kr.happyjob.study.common.comnUtils.AESCryptoHelper;
 import kr.happyjob.study.common.comnUtils.ComnUtil;*/
@@ -63,7 +64,13 @@ public class LoginServiceImpl implements LoginService {
 	/**사용자 회원가입*/
 	@Override
 	public int registerUser(Map<String, Object> paramMap) throws Exception {
+		
 		int ret = loginDao.registerUser(paramMap);
+		
+		/*회원가입 시 승진내역 테이블에 첫번째 insert*/
+		logger.info("   - paramMap : " + paramMap);
+		loginDao.insertFirstPromo(paramMap);
+		
 		return ret;
 	}
 	
@@ -146,6 +153,18 @@ public class LoginServiceImpl implements LoginService {
 	@Override
 	public void insertResume(Map<String, Object> paramMap) {
 		LoginDao.insertResume(paramMap);
+		
+	}
+
+	/*파일 코드 만들기*/
+	public int getFileCd() {
+		return loginDao.getFileCd();
+	}
+
+	/*회원 가입 시 파일 테이블에 file_cd, file_no insert*/
+	@Override
+	public void insertProfile(Map<String, Object> paramMap) throws Exception {
+		loginDao.insertProfile(paramMap);
 		
 	}
 

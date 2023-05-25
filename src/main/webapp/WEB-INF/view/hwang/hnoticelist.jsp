@@ -13,8 +13,8 @@
 								<c:forEach items="${hnoticelist}" var="list">
 									<tr>
 										<td>${list.notice_no}</td>
-										<td><a href="javascript:fn_detailone('${list.notice_no}' ,1)">${list.writer}</a></td>
-										<td><a href="javascript:fn_detailone('${list.notice_no}' ,2)">${list.notice_title}</a></td>
+										<td>${list.writer}</td>
+										<td><a href="javascript:fn_detailone('${list.notice_no}')">${list.notice_title}</a></td>
 										<td>${list.notice_date}</td>
 									</tr>
 								</c:forEach>

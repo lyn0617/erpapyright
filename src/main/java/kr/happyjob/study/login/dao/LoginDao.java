@@ -3,6 +3,7 @@ package kr.happyjob.study.login.dao;
 import java.util.List;
 import java.util.Map;
 
+import kr.happyjob.study.accounting.model.FileModel;
 import kr.happyjob.study.login.model.LgnInfoModel;
 import kr.happyjob.study.login.model.UsrMnuAtrtModel;
 import kr.happyjob.study.login.model.UsrMnuChildAtrtModel;
@@ -52,10 +53,21 @@ public interface LoginDao {
 	public static String getDirectory() {
 		// TODO Auto-generated method stub
 		return null;
-	} 
+	}
 	
+	/*회원가입 시 승진내역 테이블에 첫번째 insert*/
+	public void insertFirstPromo(Map<String, Object> paramMap);
+
+	/*파일 코드 만들기*/
+	public int getFileCd();
+	
+	/*회원 가입 시 파일 테이블에 file_cd, file_no insert*/
+	public void insertProfile(Map<String, Object> paramMap);
+ 
+
 	
 /*	*//**select박스 은행 목록*//*
 	public List<LgnInfoModel> selectBankList();*/
-	
+	
+
 }

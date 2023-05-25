@@ -40,7 +40,7 @@
 		                         inner join tb_client cli on con.client_no = cli.client_no
 		                    where contract_type = '2'
 		                  group by order_cd
-		                  ) co on ai.order_cd = co.order_cd
+		                  ) co on ai.order_cd = co.order_cd and ai.contract_no = co.contract_no
 		      left outer join (
 		                  select ex.yn_date yn_date
 		                        ,ex.exp_no exp_no
@@ -55,27 +55,30 @@
 		                   where ex.exp_yn = 'y'
 		                  ) expe on ai.exp_no = expe.exp_no
 		<where>
-			<if test="(client_no != null) and (!client_no.equals(''))">
-				and (expe.client_no = #{client_no} or co.client_no =#{client_no})
+			<if test="(client_no != null) and (!''.equals(client_no))">
+				and co.client_no =#{client_no}
 			</if>
-			<if test="(account_cd != null) and (!account_cd.equals(''))">
+			<if test="(account_cd != null) and (!''.equals(account_cd))">
 				and (expe.account_cd = #{account_cd} or co.account_cd =#{account_cd})
 			</if>
-			<if test="(srcsdate != null) and (!srcsdate.equals(''))">
-				 and (co.contract_date <![CDATA[>=]]> #{srcsdate} or expe.yn_date <![CDATA[>=]]> #{srcsdate})
-			 </if>
-			 <if test="(srcedate != null) and (!srcedate.equals(''))">
-				 and (co.contract_date <![CDATA[<=]]> #{srcedate} or expe.yn_date <![CDATA[<=]]> #{srcedate})
-			 </if>
+		    <if test="(''.equals(account_cd)) and (''.equals(client_no))">
+				and co.order_cd IS NOT NULL or expe.exp_no IS NOT NULL
+			</if>
 		</where>
-		where co.order_cd IS NOT NULL or expe.exp_no IS NOT NULL
 		group by ai.exp_no,ai.order_cd
+		<if test="(srcsdate != null) and (!''.equals(srcsdate))">
+			 having (co.contract_date <![CDATA[>=]]> #{srcsdate} or expe.yn_date <![CDATA[>=]]> #{srcsdate})
+		 </if>
+		 <if test="(srcedate != null) and (!''.equals(srcedate))">
+			 and (co.contract_date <![CDATA[<=]]> #{srcedate} or expe.yn_date <![CDATA[<=]]> #{srcedate})
+		 </if>
+		order by ai.account_no desc
 		limit #{pageindex}, #{pageSize}
 		
 		
 	</select>
 	
-	<!-- 공지사항 목록 총 갯수 조회 -->
+	<!-- 회계전표 목록 총 갯수 조회 -->
 	<select id="accountSlipListTotalCnt" resultType="int">
 		/*kr.happy.study.accounting.dao.accountingDao.accountSlipListTotalCnt*/
 		<!-- SELECT COUNT(*) AS tot_cnt FROM tb_notice noti inner join tb_userinfo ui on ui.loginID = noti.loginID -->
@@ -116,7 +119,7 @@
 		    		                         inner join tb_client cli on con.client_no = cli.client_no
 		    		                    where contract_type = '2'
 		    		                  group by order_cd
-		    		                  ) co on ai.order_cd = co.order_cd
+		    		                  ) co on ai.order_cd = co.order_cd and ai.contract_no = co.contract_no
 		    		      left outer join (
 		    		                  select ex.yn_date yn_date
 		    		                        ,ex.exp_no exp_no
@@ -132,21 +135,23 @@
 		                           group by ex.exp_no
 		    		                  ) expe on ai.exp_no = expe.exp_no
 		    	<where>
-					<if test="(client_no != null) and (!client_no.equals(''))">
-						and (expe.client_no = #{client_no} or co.client_no =#{client_no})
+					<if test="(client_no != null) and (!''.equals(client_no))">
+						and co.client_no =#{client_no}
 					</if>
-					<if test="(account_cd != null) and (!account_cd.equals(''))">
+					<if test="(account_cd != null) and (!''.equals(account_cd))">
 						and (expe.account_cd = #{account_cd} or co.account_cd =#{account_cd})
 					</if>
-					<if test="(srcsdate != null) and (!srcsdate.equals(''))">
-						 and (co.contract_date <![CDATA[>=]]> #{srcsdate} or expe.yn_date <![CDATA[>=]]> #{srcsdate})
-					 </if>
-					 <if test="(srcedate != null) and (!srcedate.equals(''))">
-						 and (co.contract_date <![CDATA[<=]]> #{srcedate} or expe.yn_date <![CDATA[<=]]> #{srcedate})
-					 </if>
+		    		<if test="(''.equals(account_cd)) and (''.equals(client_no))">
+						and co.order_cd IS NOT NULL or expe.exp_no IS NOT NULL
+					</if>
 				</where>
-				where ai.order_cd IS NOT NULL or expe.exp_no IS NOT NULL
 		        group by ai.exp_no, ai.order_cd
+				<if test="(srcsdate != null) and (!''.equals(srcsdate))">
+					 having (co.contract_date <![CDATA[>=]]> #{srcsdate} or expe.yn_date <![CDATA[>=]]> #{srcsdate})
+				 </if>
+				 <if test="(srcedate != null) and (!''.equals(srcedate))">
+					 and (co.contract_date <![CDATA[<=]]> #{srcedate} or expe.yn_date <![CDATA[<=]]> #{srcedate})
+				 </if>
 		        ) total
 	</select>
 	
@@ -161,6 +166,7 @@
               ,fax_tel
               ,client_type
  		 from tb_client
+ 		where client_type = '1'
 	</select>
 	
 	<!-- 계정과목 리스트 -->
@@ -209,78 +215,113 @@
 		 </where>
 	</select>
 	
-	<!-- 공지사항 신규 저장 -->
-	<insert id="hnoticenewsave">
-	/*kr.happyjob.study.hwang.dao.HnoticeDao.hnoticenewsave*/
-	  <selectKey keyProperty="noticeno" resultType="int" order="BEFORE"> 
-	   	SELECT IFNULL(MAX(notice_no),0) +1
-				  FROM tb_notice
-	  </selectKey>
-		insert 
-		into tb_notice
-		 	  (
-		 		notice_no
-		       ,loginID
-		       ,notice_title
-		       ,notice_date
-		       ,notice_det
-		       ,file_name
-		       ,file_size
-		       ,file_nadd
-		       ,file_madd
-		 		)
-		 values(
-		 		#{noticeno}
-		 		,#{loginID}
-		 		,#{notice_title}
-		 		,DATE_FORMAT(now(), '%Y-%m-%d')
-		 		,#{notice_det}
-		 		,#{file_name}
-		 		,#{file_size}
-		 		,#{file_nadd}
-		 		,#{file_madd}
-		 		)
-	</insert>
-
 	<!-- 회계전표 단건 조회 -->
-	<update id="hnoticesave">
-	/*kr.happyjob.study.hwang.dao.HnoticeDao.hnoticesave*/
-		update tb_notice
-		   set loginID = #{loginID}
-		       ,notice_title = #{notice_title}
-		       ,notice_det = #{notice_det}
-		       ,file_name = #{fileInfo.file_nm}
-		       ,file_size = #{fileInfo.file_size} 
-		       ,file_nadd = #{fileInfo.file_nadd}
-		       ,file_madd = #{fileInfo.file_loc}
-		 where notice_no = #{notice_no}
-	</update>
-	
-	<!-- 공지사항 단건조회 -->
-	<select id="detailone" resultType="kr.happyjob.study.hwang.model.HnoticeModel">
-	
-	/*kr.happyjob.study.hwang.dao.HnoticeDao.detailone*/
-		select noti.notice_no
-		      ,noti.loginID
-		      ,ui.name as writer
-		      ,noti.notice_title
-		      ,noti.notice_date
-		      ,noti.notice_det
-		      ,noti.file_name
-		      ,noti.file_size
-		      ,noti.file_nadd
-		      ,noti.file_madd
-		FROM tb_notice noti
-		 	 inner join tb_userinfo ui on ui.loginID = noti.loginID
-		where noti.notice_no = #{notice_no}
-	</select>
-
-	<delete id="hnoticedelete">
-	
-	/*kr.happyjob.study.hwang.dao.HnoticeDao.hnoticedelete*/
-		delete
-		FROM tb_notice 
-		where notice_no = #{notice_no}
-	</delete>
+	<select id="accSlipDetaile" resultType="kr.happyjob.study.accounting.model.AccSlipDetaileModel">
+	/*kr.happyjob.study.accounting.dao.accountingDao.accSlipDetaile*/
+	   	select ai.account_no as account_no
+		      ,co.contract_no as contract_no
+		      ,co.order_cd as order_cd
+		      ,co.contract_date as contract_date
+		      ,co.client_name as client_name
+		      ,co.loginID as conLoginID
+		      ,co.name as conUserName
+		      ,co.lcategory_cd as lcategory_cd
+		      ,co.detail_name as lcategory_name
+		      ,co.mcategory_cd as mcategory_cd
+		      ,co.mproduct_name as mproduct_name
+		      ,co.product_no as product_no
+		      ,co.sproduct_name as sproduct_name
+		      ,co.price as price
+		      ,co.total_amt as total_amt
+		      ,co.total_price as total_price
+		      ,expe.exp_no as exp_no
+		      ,expe.laccount_cd as laccount_cd
+		      ,expe.detail_name as laccount_name
+		      ,expe.account_cd as account_cd
+		      ,expe.account_name as account_name
+		      ,expe.loginID as expLoginID
+		      ,expe.name as expUserName
+		      ,expe.exp_det as exp_det
+		      ,expe.yn_date as expyn_date
+		      ,expe.exp_spent as exp_spent
+				  from tb_account_info ai
+				      left outer join (
+		      		                  select total.contract_no contract_no
+		                                  ,co.order_cd order_cd
+		                                  ,total.contract_date contract_date
+		                                  ,total.client_name client_name
+		                                  ,total.loginID loginID
+		                                  ,total.name name
+		                                  ,co.lcategory_cd lcategory_cd
+		                                  ,co.detail_name detail_name
+		                                  ,co.mcategory_cd mcategory_cd
+		                                  ,co.mproduct_name mproduct_name
+		                                  ,co.product_no product_no
+		                                  ,co.sproduct_name sproduct_name
+		                                  ,total.price price
+		                                  ,total.total_amt total_amt
+		                                  ,total.total_price total_price
+		                              from (
+		                                     select con.contract_no
+		                                           ,con.order_cd
+		                                           ,con.contract_date
+		                                           ,cli.client_name
+		                                           ,con.loginID
+		                                           ,ui.name
+		                                           ,SUM(con.product_amt) total_amt
+		                                           ,con.lcategory_cd
+		                                           ,con.mcategory_cd
+		                                           ,con.product_no
+		                                           ,po.price
+		                                           ,po.price*SUM(con.product_amt) total_price
+		                                       from tb_contract con
+		                                            inner join tb_product po on con.lcategory_cd = po.lcategory_cd and con.mcategory_cd = po.mcategory_cd and con.product_no = po.product_no
+		                                            inner join tb_userinfo ui on ui.loginID = con.loginID
+		                                            inner join tb_client cli on con.client_no = cli.client_no
+		                                      where contract_type = '2'
+		                                     group by product_no, order_cd
+		                                    )total
+		                                    inner join (
+		                                                  select con.order_cd order_cd
+		                                                         ,con.lcategory_cd lcategory_cd
+		                                                         ,dc.detail_name detail_name
+		                                                         ,con.mcategory_cd mcategory_cd
+		                                                         ,py.product_name mproduct_name
+		                                                         ,con.product_no product_no
+		                                                         ,po.product_name sproduct_name
+		                                                         ,con.product_amt product_amt
+		                                        		        from tb_contract con
+		                                        		             inner join tb_userinfo ui on con.loginID = ui.loginID
+		                                        		             inner join tb_account_title at on con.laccount_cd = at.laccount_cd and con.account_cd = at.account_cd 
+		                                        		             inner join tb_client cli on con.client_no = cli.client_no
+		                                                         inner join tb_detail_code dc on dc.group_code = "lcategory_cd" and dc.detail_code = con.lcategory_cd
+		                                                         inner join tb_product_type py on con.mcategory_cd = py.mcategory_cd
+		                                                         inner join tb_product po on con.product_no = po.product_no   
+		                                        		        where con.contract_type = '2'
+		                                        		      group by con.product_no, con.mcategory_cd,lcategory_cd, con.order_cd
+		                                    ) co on total.order_cd = co.order_cd and total.lcategory_cd = co.lcategory_cd and total.mcategory_cd = co.mcategory_cd and total.product_no = co.product_no
+				                  ) co on ai.order_cd = co.order_cd and ai.contract_no = co.contract_no
+				      left outer join (
+				                  select ex.exp_no
+		                            ,ex.laccount_cd
+		                            ,dc.detail_name
+		                            ,ex.account_cd
+		                            ,at.account_name
+		                            ,ex.exp_name
+		                            ,ex.loginID
+		                            ,ui.name
+		                            ,ex.exp_det
+		                            ,ex.yn_date
+		                            ,ex.exp_spent
+		                            ,ex.exp_yn
+				                    from tb_expense ex
+				                        inner join tb_account_title at on ex.laccount_cd = at.laccount_cd and ex.account_cd = at.account_cd
+				                        inner join tb_userinfo ui on ex.loginID = ui.loginID
+		                            inner join tb_detail_code dc on dc.group_code = 'laccount_cd' and at.laccount_cd = dc.detail_code 
+				                   where ex.exp_yn = 'y'
+				                  ) expe on ai.exp_no = expe.exp_no
+		  where co.order_cd IS NOT NULL or expe.exp_no IS NOT NULL
+		  having co.order_cd = #{req_no} or expe.exp_no = #{req_no}
+	  </select>
 	
 </mapper>

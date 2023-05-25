@@ -7,7 +7,7 @@
 <head>
 <meta charset="UTF-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-<title>공지사항</title>
+<title>월별매출현황</title>
 <!-- sweet alert import -->
 <script src='${CTX_PATH}/js/sweetalert/sweetalert.min.js'></script>
 <jsp:include page="/WEB-INF/view/common/common_include.jsp"></jsp:include>
@@ -21,7 +21,11 @@
 		fButtonClickEvent();
 		
 		setDateBox();
-
+		var dt = new Date();
+		var year = dt.getFullYear();
+		$('#selectyear').val(year);
+		board_search();
+		viewmmChart();
 	});
 
 	/* 버튼 이벤트 등록 - 조회  */
@@ -45,18 +49,20 @@
 		var dt = new Date();
 		var year = dt.getFullYear();
 		
-		$("#year").append("<option value=''>년도</option>");
+		//$("#year").append("<option value=''>년도</option>");
 		
 		for(var y = (year); y >= (year-10); y--){
 			$("#year").append("<option value='"+ y +"'>"+ y + " 년" +"</option>");
 		}
 		
 		var selectyear = $("#year option:selected").val();
+		//var selectyear = '${selectyear}';
 		
 		console.log("선택년도: "+ selectyear);
 		//선택한 값 넣어주기.
 		$("#selectyear").val(selectyear);
 		console.log("넣은거 확인 : " + $('#selectyear').val());
+		
 	}
 	
 	
@@ -119,11 +125,12 @@
 </head>
 <body>
 	<form id="myForm" action="" method="">
-		<input type="hidden" name="action" id="action" value=""> <input
-			type="hidden" name="loginId" id="loginId" value="${loginId}">
+		<input type="hidden" name="action" id="action" value="">
+		<input type="hidden" name="loginId" id="loginId" value="${loginId}">
 		<input type="hidden" name="userNm" id="userNm" value="${userNm}">
 		<input type="hidden" name="currentpage" id="currentpage" value="">
-		<input type="hidden" name="selectyear" id="selectyear" value="">
+ 		<input type="hidden" name="selectyear" id="selectyear" value="">
+		
 		<!-- 모달 배경 -->
 		<div id="mask"></div>
 

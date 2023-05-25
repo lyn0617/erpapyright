@@ -183,6 +183,7 @@ function comcombo(group_code, combo_name, type, selvalue){
 	     success: function(data)
 	     { 				
 	    	 
+	    	 console.log(data);
 		     var json_obj = $.parseJSON(JSON.stringify(data));//parse JSON 
 		     var jsonstr = json_obj.list;
 		     console.log("jsonstr : " + jsonstr);
@@ -219,6 +220,255 @@ function comcombo(group_code, combo_name, type, selvalue){
 	         } 
 	     },
 	     error:function(request,status,error){ alert("code:"+request.status+"\n"+"message:"+request.responseText+"\n"+"error:"+error); }
+	});  
+};
+
+function clientSelectBox(client_no, combo_name, type, selvalue){
+	
+	console.log("comcombo Start !!!!!!!!!!!!!! ");
+	
+	var selectbox = document.getElementById(combo_name);
+	
+	var data = {
+			"client_no" : client_no
+	};	
+	
+	$(selectbox).find("option").remove();
+	
+	//private String dtl_cod;	
+	//private String dtl_cod_nm;
+	
+	$.ajax({ 
+		type: "POST",  
+		url: "/accounting/clientlist.do", 
+		dataType: "json",  
+		data : data,
+		success: function(data)
+		{ 				
+			
+			var json_obj = $.parseJSON(JSON.stringify(data));//parse JSON 
+			var jsonstr = json_obj.clientlist;
+			console.log("jsonstr : " + jsonstr);
+			
+			var jsonstr_obj = $.parseJSON(JSON.stringify(jsonstr));//parse JSON 
+			var listLen = jsonstr_obj.length;
+			
+			if(type == "all") {
+				$(selectbox).append("<option value=''>전체</option>");
+			}		     
+			
+			if(type == "sel") {
+				$(selectbox).append("<option value=''>선택</option>");
+			}
+			console.log(" selvalue : " + selvalue);
+			for(var i=0; i<listLen; i++)
+			{ 		
+				var eleString = JSON.stringify(jsonstr_obj[i]);
+				var item_obj = $.parseJSON(eleString);//parse JSON
+				
+				if(selvalue != null && selvalue != null && selvalue != "") {
+					if(selvalue == item_obj.client_no) {
+						console.log(" item_obj.client_no : " + item_obj.client_no);
+						
+						$(selectbox).append("<option value='"+ item_obj.client_no + "' selected>" + item_obj.client_name + "</option>");
+					} else {
+						$(selectbox).append("<option value='"+ item_obj.client_no + "'>" + item_obj.client_name + "</option>");
+					}
+				} else {
+					$(selectbox).append("<option value='"+ item_obj.client_no + "'>" + item_obj.client_name + "</option>");
+				}
+				
+				
+			} 
+		},
+		error:function(request,status,error){ alert("code:"+request.status+"\n"+"message:"+request.responseText+"\n"+"error:"+error); }
+	});  
+};
+
+function detileAccount(laccount_cd, combo_name, type, selvalue){
+	
+	console.log("comcombo Start !!!!!!!!!!!!!! ");
+	
+	var selectbox = document.getElementById(combo_name);
+	
+	var data = {
+			"laccount_cd" : laccount_cd,
+	};	
+	
+	$(selectbox).find("option").remove();
+	
+	//private String dtl_cod;	
+	//private String dtl_cod_nm;
+	
+	$.ajax({ 
+		type: "POST",  
+		url: "/accounting/detileAccountList.do", 
+		dataType: "json",  
+		data : data,
+		success: function(data)
+		{ 				
+			
+			var json_obj = $.parseJSON(JSON.stringify(data));//parse JSON 
+			var jsonstr = json_obj.detileAccountList;
+			console.log("jsonstr : " + jsonstr);
+			
+			var jsonstr_obj = $.parseJSON(JSON.stringify(jsonstr));//parse JSON 
+			var listLen = jsonstr_obj.length;
+			
+			if(type == "all") {
+				$(selectbox).append("<option value=''>전체</option>");
+			}		     
+			
+			if(type == "sel") {
+				$(selectbox).append("<option value=''>선택</option>");
+			}
+			console.log(" selvalue : " + selvalue);
+			for(var i=0; i<listLen; i++)
+			{ 		
+				var eleString = JSON.stringify(jsonstr_obj[i]);
+				var item_obj = $.parseJSON(eleString);//parse JSON
+				
+				if(selvalue != null && selvalue != null && selvalue != "") {
+					if(selvalue == item_obj.account_cd) {
+						console.log(" item_obj.account_cd : " + item_obj.account_cd);
+						
+						$(selectbox).append("<option value='"+ item_obj.account_cd + "' selected>" + item_obj.account_name + "</option>");
+					} else {
+						$(selectbox).append("<option value='"+ item_obj.account_cd + "'>" + item_obj.account_name + "</option>");
+					}
+				} else {
+					$(selectbox).append("<option value='"+ item_obj.account_cd + "'>" + item_obj.account_name + "</option>");
+				}
+				
+				
+			} 
+		},
+		error:function(request,status,error){ alert("code:"+request.status+"\n"+"message:"+request.responseText+"\n"+"error:"+error); }
+	});  
+};
+
+function productList(lcategory_cd, mcategory_cd, combo_name, type, selvalue){
+	
+	console.log("comcombo Start !!!!!!!!!!!!!! ");
+	
+	var selectbox = document.getElementById(combo_name);
+	
+	var data = {
+			"lcategory_cd" : lcategory_cd,
+			"mcategory_cd" : mcategory_cd 
+	};	
+	
+	$(selectbox).find("option").remove();
+	
+	//private String dtl_cod;	
+	//private String dtl_cod_nm;
+	
+	$.ajax({ 
+		type: "POST",  
+		url: "/accounting/productList.do", 
+		dataType: "json",  
+		data : data,
+		success: function(data)
+		{ 				
+			
+			var json_obj = $.parseJSON(JSON.stringify(data));//parse JSON 
+			var jsonstr = json_obj.productList;
+			console.log("jsonstr : " + jsonstr);
+			
+			var jsonstr_obj = $.parseJSON(JSON.stringify(jsonstr));//parse JSON 
+			var listLen = jsonstr_obj.length;
+			
+			if(type == "all") {
+				$(selectbox).append("<option value=''>전체</option>");
+			}		     
+			
+			if(type == "sel") {
+				$(selectbox).append("<option value=''>선택</option>");
+			}
+			console.log(" selvalue : " + selvalue);
+			for(var i=0; i<listLen; i++)
+			{ 		
+				var eleString = JSON.stringify(jsonstr_obj[i]);
+				var item_obj = $.parseJSON(eleString);//parse JSON
+				
+				if(selvalue != null && selvalue != null && selvalue != "") {
+					if(selvalue == item_obj.account_cd) {
+						console.log(" item_obj.product_no : " + item_obj.product_no);
+						
+						$(selectbox).append("<option value='"+ item_obj.product_no + "' selected>" + item_obj.product_name + "</option>");
+					} else {
+						$(selectbox).append("<option value='"+ item_obj.product_no + "'>" + item_obj.product_name + "</option>");
+					}
+				} else {
+					$(selectbox).append("<option value='"+ item_obj.product_no + "'>" + item_obj.product_name + "</option>");
+				}
+				
+				
+			} 
+		},
+		error:function(request,status,error){ alert("code:"+request.status+"\n"+"message:"+request.responseText+"\n"+"error:"+error); }
+	});  
+};
+
+function midProductList(lcategory_cd, combo_name, type, selvalue){
+	
+	console.log("comcombo Start !!!!!!!!!!!!!! ");
+	
+	var selectbox = document.getElementById(combo_name);
+	
+	var data = {
+			"lcategory_cd" : lcategory_cd,
+	};	
+	
+	$(selectbox).find("option").remove();
+	
+	//private String dtl_cod;	
+	//private String dtl_cod_nm;
+	
+	$.ajax({ 
+		type: "POST",  
+		url: "/accounting/midProductList.do", 
+		dataType: "json",  
+		data : data,
+		success: function(data)
+		{ 				
+			
+			var json_obj = $.parseJSON(JSON.stringify(data));//parse JSON 
+			var jsonstr = json_obj.midProductList;
+			console.log("jsonstr : " + jsonstr);
+			
+			var jsonstr_obj = $.parseJSON(JSON.stringify(jsonstr));//parse JSON 
+			var listLen = jsonstr_obj.length;
+			
+			if(type == "all") {
+				$(selectbox).append("<option value=''>전체</option>");
+			}		     
+			
+			if(type == "sel") {
+				$(selectbox).append("<option value=''>선택</option>");
+			}
+			console.log(" selvalue : " + selvalue);
+			for(var i=0; i<listLen; i++)
+			{ 		
+				var eleString = JSON.stringify(jsonstr_obj[i]);
+				var item_obj = $.parseJSON(eleString);//parse JSON
+				
+				if(selvalue != null && selvalue != null && selvalue != "") {
+					if(selvalue == item_obj.account_cd) {
+						console.log(" item_obj.mcategory_cd : " + item_obj.mcategory_cd);
+						
+						$(selectbox).append("<option value='"+ item_obj.mcategory_cd + "' selected>" + item_obj.product_name + "</option>");
+					} else {
+						$(selectbox).append("<option value='"+ item_obj.mcategory_cd + "'>" + item_obj.product_name + "</option>");
+					}
+				} else {
+					$(selectbox).append("<option value='"+ item_obj.mcategory_cd + "'>" + item_obj.product_name + "</option>");
+				}
+				
+				
+			} 
+		},
+		error:function(request,status,error){ alert("code:"+request.status+"\n"+"message:"+request.responseText+"\n"+"error:"+error); }
 	});  
 };
 

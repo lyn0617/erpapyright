@@ -46,8 +46,12 @@
 			},
 			seriesType : 'bars',
 			series : {2: {type:'line',
-						  targetAxisIndex: 1}}
-
+						  targetAxisIndex: 1},			
+		   },
+		   vAxes: {0: {
+           	title:'단위:원'
+           }, 	
+           }
 		}
 		
 		 var chart = new google.visualization.ComboChart(document.getElementById('chart_div'));

@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 
+import kr.happyjob.study.accounting.model.FileModel;
 import kr.happyjob.study.common.comnUtils.ComnCodUtil;
 import kr.happyjob.study.login.model.LgnInfoModel;
 import kr.happyjob.study.login.model.UsrMnuAtrtModel;
@@ -191,10 +192,20 @@ public class LoginController {
 	   String result = "SUCCESS";
 	   String resultMsg;
 	   
+		//전화 번호 합치기
+		paramMap.put("hp", (String)paramMap.get("tel1") + "-" + (String)paramMap.get("tel2") + "-" + (String)paramMap.get("tel3"));
+		
 	   if("I".equals(action)) {
 		   
+		   /// 파일 코드 생성
+		   int getFileCd = loginService.getFileCd();
+		   paramMap.put("file_cd", getFileCd);
+		   
+		   loginService.insertProfile(paramMap);
 		   loginService.registerUser(paramMap);
+		   
 		   resultMsg = "가입 요청 완료";
+		   
 	   } else {
 		   
 		   result = "FAIL";

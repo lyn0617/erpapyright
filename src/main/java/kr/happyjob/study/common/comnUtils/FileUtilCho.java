@@ -3,6 +3,7 @@ package kr.happyjob.study.common.comnUtils;
 
 
 import java.io.File;
+import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -158,4 +159,65 @@ public class FileUtilCho {
         	file.mkdirs();
         }
 	}
+	
+	public Map<String,Object> uploadFilesHan() throws Exception {
+		
+		// 디렉토리 생성
+		makeDir();
+        
+        Iterator<String> files = multipartHttpServletRequest.getFileNames();
+
+    	Map<String,Object> map = new HashMap<String, Object>();
+    	
+        while(files.hasNext()){
+        	
+            String uploadFile = files.next();
+
+            MultipartFile multipartFile = multipartHttpServletRequest.getFile(uploadFile);
+          //  String fileDvsCod = multipartFile.getName();
+
+            if (!multipartFile.isEmpty()) {
+            
+            	String file_nm = multipartFile.getOriginalFilename();
+            	
+				// 원본 파일명을 이용해서 새로운 파일명 생성
+            	String rename = fileRename(file_nm);
+                String fileExtension = rename.substring(rename.lastIndexOf(".")+1);
+                String file_loc = rootFilePath+itemFilePath + rename;
+               
+               /* String thumbnailFileName = tmpFileName +"_thumbnail."+fileExtension;*/
+                String file_Size = Long.toString(multipartFile.getSize());
+                
+                
+                map.put("file_nm", rename);
+                map.put("file_size", file_Size);
+                map.put("file_loc", file_loc);
+                map.put("fileExtension", fileExtension);
+               
+                logger.info("file 정보 : " + map);
+                
+                File orgFile = new File(file_loc);
+                multipartFile.transferTo(orgFile);
+                
+              
+            }
+        }
+        
+        return map;
+	}
+	
+	// 파일명 변경 메소드 20221114123350_15134.png
+	   public static String fileRename(String originFileName) {
+	      SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
+	      String date = sdf.format(new java.util.Date(System.currentTimeMillis()));
+	      // 현재 시간을 기준으로해서 파일명으로 설정
+
+	      int ranNum = (int) (Math.random() * 100000); // 5자리 랜덤 숫자 생성
+
+	      String str = "_" + String.format("%05d", ranNum);
+
+	      String ext = originFileName.substring(originFileName.lastIndexOf("."));
+
+	      return date + str + ext;
+	   }
 }

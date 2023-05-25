@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import kr.happyjob.study.accounting.model.AccountSlipModel;
+import kr.happyjob.study.accounting.model.AccSlipDetaileModel;
 import kr.happyjob.study.accounting.model.DetileAccountListModel;
 import kr.happyjob.study.accounting.model.MidProductListModel;
 import kr.happyjob.study.accounting.model.ProductListModel;
@@ -28,9 +29,8 @@ public interface AccountSlipDao {
 	
 	/** 제품 중분류 목록 */
 	public List<MidProductListModel> midProductList(Map<String, Object> paramMap) throws Exception;
-
 	
-	/** 공지사항 단건 조회 */
-//	public HnoticeModel detailone(Map<String, Object> paramMap) throws Exception;
+	/** 회계전표 단건 조회 */
+	public List<AccSlipDetaileModel> accSlipDetaile(Map<String, Object> paramMap) throws Exception;
 	
 }

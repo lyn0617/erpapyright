@@ -22,6 +22,7 @@
       FROM tb_userinfo 
      WHERE loginID = #{lgn_Id}
         AND password = #{pwd}
+        AND status_cd = 'A'
      </select>
      
      
@@ -75,74 +76,92 @@
          ORDER BY ta.odr
      </select>
      
+     <!-- 파일코드 가져오기 -->
+      <select id="getFileCd" resultType="int">
+     	select (ifnull(max(file_cd),0) + 1) as file_cd from tb_file
+     </select>
+     
+      <!-- 회원 가입 시 파일 테이블에 file_cd, file_no insert -->
+     <insert id="insertProfile">
+       insert into tb_file(
+       	file_cd
+       	,file_no)
+       	values (
+       	#{file_cd}
+       	,1);
+     </insert>
+     
      <!-- 회원가입 -->
      <insert id="registerUser" parameterType="java.util.Map">
      /*kr.happy.study.login.dao.LoginDao.registerUser*/
+     	<selectKey resultType="int" keyProperty="empno" order="BEFORE">
+         SELECT CONCAT(DATE_FORMAT(NOW(), '%Y'),LPAD((SUBSTR(IFNULL(MAX(emp_no), CONCAT(DATE_FORMAT(NOW(), '%Y'),'0000')),5) + 1),4,'0'))
+      		FROM tb_userinfo
+      	</selectKey> 
      INSERT INTO tb_userinfo (
-     							loginID
-     						,	user_type
-     						,	name
-     						,	password
-     						,	email_cop
-     						,	birthday
-     						,	gender_cd
-     						,	user_tel1
-     						,	user_tel2
-     						,	user_tel3
-     						,	user_zipcode
-     						,	user_address
-     						,	user_dt_address
-							,	consult_yn
-     						,	del_cd
-     						,	div_cd
-     						,	user_email
-     						,	user_company
-     						,	approval_cd
-     						,	salary
-     						,	career_yn
-     						,	career_mm
-     						,	singular_facts
-     						,	user_describe
-     						,	user_grade
-     						,	user_hope_area1
-     						,	user_hope_area2
-     						,	user_hope_area3
-     						,	user_contents
-     						,	user_hope_work
+     							emp_no
+								,loginID
+								,password
+								,name
+								,sex
+								,birthday
+								,email
+								,zip_code
+								,addr
+								,det_addr
+								,hp
+								,school_cd
+								,bank_cd
+								,account
+								,st_date
+								,rank_cd
+								,user_type
+								,status_cd
+							    ,file_cd
+		  						,file_no
+		  						,total_rest
      						) VALUES (
-     								#{loginID}
-								,	#{user_type}
-								,	#{name}  
-								,	#{password}  
-								,	#{email_cop}
-								,	#{birthday}    
-								,	#{gender_cd}  
-								,	#{user_tel1}  
-								,	#{user_tel2}  
-								,	#{user_tel3}  
-								,	#{user_zipcode}  
-								,	#{user_address}  
-								,	#{user_dt_address}
-								,	#{consult_yn}					
-								,	#{del_cd}
-								,	#{div_cd}    	
-								,	#{user_email}  
-								,	#{user_company}		
-								,	#{approval_cd}			
-     							,	#{salary}								
-								,	#{career_yn}								
-								,	#{career_mm}
-	     						,	#{singular_facts}
-								,	#{user_describe}
-	     						,	#{grade}
-	     						,	#{area1}
-	     						,	#{area2}
-	     						,	#{area3}
-	     						,	#{user_contents}
-	     						,	#{user_hope_work}
-     						)
+     								#{empno}
+									,#{loginID}
+									,#{password}
+									,#{name}
+									,#{sex}
+									,#{birthday}
+									,#{email}
+									,#{user_zipcode}
+									,#{user_address}
+									,#{user_dt_address}
+									,#{hp}
+									,#{school_cd}
+									,#{bank_cd}
+									,#{account}
+									,DATE_FORMAT(now(), '%Y-%m-%d')
+									,'8'
+									,#{user_type}
+									,'A'
+									,#{file_cd}
+		  							,1
+		  							,15)
+
+     </insert>
      
-     
+     <!-- 회원가입 시 승진내역 테이블에 첫번째 insert -->
+     <insert id="insertFirstPromo">
+   	     <selectKey resultType="int" keyProperty="prmtnno" order="BEFORE">
+            select ifnull(max(prmtn_no),0) + 1 from tb_promotion
+         </selectKey> 
+     	insert into tb_promotion(
+		  loginID
+  		  ,prmtn_no
+		  ,prmtn_date
+		  ,prmtn_name
+		  ,rank_cd)
+		  values (
+		  #{loginID}
+		  ,#{prmtnno}
+		  , DATE_FORMAT(now(), '%Y-%m-%d')
+		  ,'관리자'
+		  ,'8');
      </insert>
      
      <!-- 유저전문기술(tb_userskill 테이블에 따로 저장) -->
@@ -171,17 +190,16 @@
 	<select id="check_email" parameterType="String" resultType="int">
 		SELECT count(*)
 		FROM tb_userinfo
-		WHERE user_email = #{user_email}
+		WHERE email = #{email}
 	</select>
 	
      <!-- 사용자 ID 찾기 -->
       <select id="selectFindId" resultType="kr.happyjob.study.login.model.LgnInfoModel">
       /*kr.happyjob.study.login.dao.LoginDao.selectFindId*/
       SELECT  u.loginID as loginID
-      	  ,	  u.user_email as user_email
+      	  ,	  u.email as
       FROM    tb_userinfo as u
-      WHERE   u.del_cd ="n"
-      AND	  u.user_email = #{user_email}
+      WHERE   u.email = #{email}
      </select>
 
       
@@ -190,10 +208,9 @@
       /*kr.happyjob.study.login.dao.LoginDao.selectFindPw*/
       SELECT  u.loginID as loginID
       	  ,   u.password as password
-      	  ,	  u.user_email as user_email
+      	  ,	  u.email as email
       FROM    tb_userinfo as u
-      WHERE   u.del_cd ="n"
-      AND	  u.user_email = #{user_email}
+      WHERE   u.email = #{email}
       AND 	  u.loginID = #{loginID}
      </select>
 
@@ -202,8 +219,7 @@
      <select id="registerIdCheck" resultType="kr.happyjob.study.login.model.LgnInfoModel">
      SELECT     u.loginID as loginID
      FROM    	tb_userinfo as u
-     WHERE   	u.del_cd ="n"
-     AND 	  	u.loginID = #{loginID}
+     WHERE  	u.loginID = #{loginID}
      </select>  
      
      

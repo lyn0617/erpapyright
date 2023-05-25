@@ -14,180 +14,96 @@
 
 <script type="text/javascript">
 
-	// 페이징 설정
-	var pageSize = 10;
+	// 그룹코드 페이징 설정
+	var pageSize = 10;			//한페이지에 몇개 볼것인가
 	var pageBlockSize = 5;
+	
+
+	
 	
 	/** OnLoad event */ 
 	$(function() {
-	
-		fRegisterButtonClickEvent();
-	
+		
 		searchnotice();
 		
-		
+		fRegisterButtonClickEvent();
+	
 	});
 	
 	/** 버튼 이벤트 등록 */
 	function fRegisterButtonClickEvent() {
 		$('a[name=btn]').click(function(e) {
-			e.preventDefault();
+			e.preventDefault();		//이후의 예약 이벤트를 모두 소멸시킴
 
-			var btnId = $(this).attr('id');
-			
+			var btnId = $(this).attr('id');	//해당 버튼의 아이디를 꺼내라
+
 			switch (btnId) {
-			    case 'btnSave' :
-				fn_save();
-				break;
-			    case 'btnDelete' :
-			    	$("#action").val("D");
+			case 'btnSave' :
 					fn_save();
 					break;
-			    case 'btnSavefile' :
-					fn_savefile();
-					break;	
-			    case 'btnDeletefile' :
-			    	$("#action").val("D");
-			    	fn_savefile();
-					break;	
-				case 'btnClose' :
-				case 'btnClosefile' :
-					gfCloseModal();
-					break;
+					case 'btnClose' :
+					case 'btnClosefile' :
+						gfCloseModal();
+						break;
 			}
 		});
-		
-		var upfile = document.getElementById('addfile');
-		upfile.addEventListener('change',
-						function(event) {
-							$("#fileview").empty();
-							var image = event.target;
-							var imgpath = "";
-							if (image.files[0]) {								
-								imgpath = window.URL.createObjectURL(image.files[0]);
-								
-								console.log(imgpath);
-								
-								var filearr = $("#addfile").val().split(".");
-
-								var previewhtml = "";
-
-								if (filearr[1] == "jpg" || filearr[1] == "png") {
-									previewhtml = "<img src='" + imgpath + "' style='width: 200px; height: 130px;' />";
-								} else {
-									previewhtml = "";
-								}
-
-								$("#fileview").empty().append(previewhtml);
-							}
-						});
 	}
 	
-	
-	function searchnotice(cpage) {
+	function searchnotice(cpage){		//cpage라는 파라미터 값을 받을 것
 		
-		cpage = cpage || 1;
+		cpage = cpage || 1;		//undefined 면 1로 셋팅
 		
-		// 파라메터,  callback
+		//먼저 파라미터, callback 지정해줘야함
 		var param = {
 				scrtitle : $("#srctitle").val(),
 				srcsdate : $("#srcsdate").val(),
 				srcedate : $("#srcedate").val(),
 				pageSize : pageSize,
-				cpage : cpage,
-		}
+				cpage : cpage, 	//페이지번호를 넘김
+				
+		} //{}json 형태
 		
-		var listcallback = function(returndata) {
-						
+		var listcallback = function(returndata){
 			console.log(returndata);
+			
+			
 			
 			$("#listNotice").empty().append(returndata);
 			
+			console.log("totcnt: " + $("#counthnoticelist").val());
 			var counthnoticelist = $("#counthnoticelist").val();
 			
 			var paginationHtml = getPaginationHtml(cpage, counthnoticelist, pageSize, pageBlockSize, 'searchnotice');
+			console.log("paginationHtml : " + paginationHtml);
+			//swal(paginationHtml);
+			$("#noticePagination").empty().append( paginationHtml );
 			
-			$("#noticePagination").empty().append(paginationHtml);
+			// 현재 페이지 설정
+			//$("#currentPageComnGrpCod").val(cpage);
 			
-			$("#currentpage").val(cpage);
-			
-		}
+							
+		}	//함수형 변수
 		
-		callAjax("/hwang/hnoticelist.do", "post", "text", "false", param, listcallback) ;
+		/**
+		 * ajax 공통 호출 함수
+		 *
+		 * @param
+		 *   url : 서비스 호출URL
+		 *   method : post, get
+		 *   async : true, false		비동기식, sync는 응답을 기다림, async 사용시 false
+		 *   param : data parameter
+		 *   callback : callback function name
+		 */
+		 
+		 callAjax("/hwang/hnoticelist.do", "post", "text", "false", param, listcallback);
+		 
 	}
 	
-    function getToday(){
-        var date = new Date();
-        var year = date.getFullYear();
-        var month = ("0" + (1 + date.getMonth())).slice(-2);
-        var day = ("0" + date.getDate()).slice(-2);
-
-        return year + "-" + month + "-" + day;
-    }
-	
-	
-    ////파일 미첨부 시작	
-	function fn_openpopup() {
+	/* 신규 등록 || 수정  */
+	function initpopup(object) {		
 		
-		initpopup();
+		if(object == "" || object == null || object == undefined ){
 		
-		gfModalPop("#noticereg");
-		
-	}
-	
-	function fn_save() {
-		
-		if(!fValidate()) {
-			return;
-		}
-		
-		var param = {
-				notice_no  : $("#noticeno").val(),  
-			    notice_title : $("#notice_title").val(),
-			    notice_det : $("#notice_det").val(),
-				action : $("#action").val(),
-		}
-		
-		var savecallback = function(returndata) {
-						
-			console.log(  JSON.stringify(returndata) );
-			
-			if(returndata.result == "SUCCESS") {
-				alert("저장 되었습니다.");
-				gfCloseModal();
-				
-				if($("#action").val() == "U") {
-					searchnotice($("#currentpage").val());
-				} else {
-					searchnotice();
-				}
-				
-			}
-		}
-		
-		callAjax("/hwang/hnoticesave.do", "post", "json", "false", param, savecallback) ;
-		
-	}
-	
-    function fValidate() {
-    	
-		var chk = checkNotEmpty(
-				[
-						[ "notice_title", "제목를 입력해 주세요." ]
-					,	[ "notice_det", "내용을 입력해 주세요" ]
-				]
-		);
-
-		if (!chk) {
-			return;
-		}
-
-		return true;
-	}
-	
-	function initpopup(object) {	
-		
-		if( object == "" || object == null || object == undefined) {
 			$("#writer").val($("#userNm").val());
 			$("#notice_date").val(getToday());
 			
@@ -197,11 +113,9 @@
 			$("#btnDelete").hide();
 			
 			$("#action").val("I");
-		} else {			
-			// {"notice_no":17,"loginID":"admin","writer":"변경","notice_title":"test","notice_date":"2023-05-08","notice_det":"test","file_name":null,"file_size":0,"file_nadd":null,"file_madd":null}
 		
-		    $("#noticeno").val(object.notice_no);
-			$("#writer").val(object.writer);
+		} else {
+			$("#writer").val($(object.writer));
 			$("#notice_date").val(object.notice_date);
 			
 			$("#notice_title").val(object.notice_title);
@@ -211,174 +125,71 @@
 			
 			$("#action").val("U");
 		}
-		
 	}
 	
-	
-    function fn_detailone(notice_no,popuptype) {
-    	
-    	var param = {
-    			notice_no : notice_no
-    	}
-    	
-    	var detailonecallback = function(returndata) {
-    		console.log(  JSON.stringify(returndata)  );
-    		
-    		console.log( returndata.detailone.notice_no);
-    		
-    		if(popuptype == 1) {
-    			initpopup(returndata.detailone);
-        		
-        		gfModalPop("#noticereg");
-    		} else {
-    			initpopupfile(returndata.detailone);
-        		
-        		gfModalPop("#noticeregfile");
-    		}
-    		
-    	}
-    	
-    	callAjax("/hwang/detailone.do", "post", "json", "false", param, detailonecallback) ;
-    }    
-    //// 파일 미첨부 끝
-     
-    
-    
-    
-    //// 파일 첨부 시작
-    function fn_filechange(event) {
-    	
-    	var chtag = event.target;
-    	
-    	alert(chtag);
-    	
-    }
-    
-    
-    function fn_openpopupfile() {
+	function fn_openpopup(){
 		
-    	initpopupfile();
-    	
-		gfModalPop("#noticeregfile");
+		initpopup();
 		
+		gfModalPop("#noticereg");
 	}
-    
-    function initpopupfile(object) {	
-		
-		if( object == "" || object == null || object == undefined) {
-			$("#writerfile").val($("#userNm").val());
-			$("#notice_datefile").val(getToday());
+	
+	function fn_save() {
 			
-			
-			
-			$("#notice_titlefile").val("");
-			$("#notice_detfile").val("");
-			$("#addfile").val("");
-			$("#fileview").empty();
-			
-			$("#btnDeletefile").hide();
-			
-			$("#action").val("I");
-		} else {			
-			// {"notice_no":17,"loginID":"admin","writer":"변경","notice_title":"test","notice_date":"2023-05-08","notice_det":"test","file_name":null,"file_size":0,"file_nadd":null,"file_madd":null}
-		
-		    $("#noticeno").val(object.notice_no);
-			$("#writerfile").val(object.writer);
-			$("#notice_datefile").val(object.notice_date);
-			
-			$("#notice_titlefile").val(object.notice_title);
-			$("#notice_detfile").val(object.notice_det);
-			$("#addfile").val("");
-			
-			var file_name = object.file_name;
-			var filearr = [];
-			var previewhtml = "";
-
-			
-			if( file_name == "" || file_name == null || file_name == undefined) {
-				previewhtml = "";
-			} else {
-				filearr = file_name.split(".");
-				
-				
-				if (filearr[1] == "jpg" || filearr[1] == "png") {
-					previewhtml = "<a href='javascript:fn_downaload()'>   <img src='" + object.file_nadd + "' style='width: 200px; height: 130px;' />  </a>";
-				} else {
-					previewhtml = "<a href='javascript:fn_downaload()'>" + object.file_name  + "</a>";
-				}
+			var param = {
+					notice_no : $("#noticeno").val(),
+				    notice_title : $("#notice_title").val(),
+				    notice_det : $("#notice_det").val(),
+					action : $("#action").val(),
 			}
 			
-
-			$("#fileview").empty().append(previewhtml);
-			
-			$("#btnDeletefile").show();
-			
-			$("#action").val("U");
-		}
-		
-	}
-	
-    function fn_downaload() {
-    	alert($("#noticeno").val());
-    	
-    	var params = "<input type='hidden' name='notice_no' value='"+ $("#noticeno").val() +"' />";
-	 	
-	 	jQuery("<form action='/hwang/hnoticefiledownaload.do' method='post'>"+params+"</form>").appendTo('body').submit().remove();
-		 
-    	
-    }
-    
-    function fn_savefile() {
-		
-      if(!fValidatefile()) {
-    	  return;
-      }
-    	
- 	   var frm = document.getElementById("myForm");
-	   frm.enctype = 'multipart/form-data';
-	   var dataWithFile = new FormData(frm);
-		
-		var savecallback = function(returndata) {
-						
-			console.log(  JSON.stringify(returndata) );
-			
-			if(returndata.result == "SUCCESS") {
-				alert("저장 되었습니다.");
-				gfCloseModal();
+			var savecallback = function(returndata) {
+							
+				console.log(  JSON.stringify(returndata) );
 				
-				if($("#action").val() == "U") {
-					searchnotice($("#currentpage").val());
-				} else {
+				if(returndata.result == "SUCCESS") {
+					alert("저장 되었습니다.");
+					gfCloseModal();
 					searchnotice();
 				}
-				
 			}
+			
+			callAjax("/hwang/hnoticesave.do", "post", "json", "false", param, savecallback) ;
+			
+		}
+	
+	function fn_openpopupfile(){
+		gfModalPop("#noticeregfile");
+	}
+	
+	function fn_detailone(notice_no){
+		
+		var param = {
+				notice_no : notice_no
+				
 		}
 		
-		callAjaxFileUploadSetFormData("/hwang/hnoticesavefile.do", "post", "json", true, dataWithFile, savecallback);
-		
-	}
-    
-    function fValidatefile() {
-    	
-		var chk = checkNotEmpty(
-				[
-						[ "notice_titlefile", "제목를 입력해 주세요." ]
-					,	[ "notice_detfile", "내용을 입력해 주세요" ]
-				]
-		);
-
-		if (!chk) {
-			return;
+		var detailonecallback = function (returndata){
+			console.log(  JSON.stringify(returndata) );
+			console.log(returndata.detailone.notice_no);
+			
+			initpopup(returndata.detailone);
+			
+			gfModalPop("#noticereg");
 		}
-
-		return true;
+		
+		callAjax("/hwang/detailone.do", "post", "json", "false", param, detailonecallback) ;
 	}
-    
-    
-    ////파일 첨부 끝
-    
+	
+	function getToday(){
+        var date = new Date();
+        var year = date.getFullYear();
+        var month = ("0" + (1 + date.getMonth())).slice(-2);
+        var day = ("0" + date.getDate()).slice(-2);
 
+        return year + "-" + month + "-" + day;
+    }
+	
 </script>
 
 </head>
@@ -532,13 +343,13 @@
 
 					<tbody>
 						<tr>
-							<th scope="row">작성자 </th>
+							<th scope="row">작성자 <span class="font_red">*</span></th>
 							<td><input type="text" class="inputTxt p100" name="writerfile" id="writerfile"  readonly /></td>
-							<th scope="row">작성일자 </th>
+							<th scope="row">작성일자 <span class="font_red">*</span></th>
 							<td><input type="text" class="inputTxt p100" name="notice_datefile" id="notice_datefile" readonly /></td>
 						</tr>
 						<tr>
-							<th scope="row">제목<span class="font_red">*</span></th>
+							<th scope="row">제목 <span class="font_red">*</span></th>
 							<td colspan="3">
 							     <input type="text" class="inputTxt p100"	name="notice_titlefile" id="notice_titlefile" />
 							</td>
@@ -552,11 +363,8 @@
 						</tr>
 							
 						<tr>
-							<th scope="row">파일 </th>
-							<td>
-							     <!-- input type="file" class="inputTxt p100" name="addfile" id="addfile"  onChange="fn_filechange(event)"  / -->
-							     <input type="file" class="inputTxt p100" name="addfile" id="addfile" />
-							</td>
+							<th scope="row">파일 <span class="font_red">*</span></th>
+							<td><input type="file" class="inputTxt p100" name="addfile" id="addfile"  readonly /></td>
 							<td colspan="2"><div id="fileview"></div></td>
 						</tr>
 							

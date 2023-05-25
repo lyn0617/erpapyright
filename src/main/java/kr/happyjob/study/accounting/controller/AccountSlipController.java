@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import kr.happyjob.study.accounting.model.AccountSlipModel;
+import kr.happyjob.study.accounting.model.AccSlipDetaileModel;
 import kr.happyjob.study.accounting.model.DetileAccountListModel;
 import kr.happyjob.study.accounting.model.MidProductListModel;
 import kr.happyjob.study.accounting.model.ProductListModel;
@@ -174,70 +175,27 @@ public class AccountSlipController {
 		
 		return resultMap;
 	}
-//	
-//	/**
-//	 * 공지사항 파일저장
-//	 */
-//	@RequestMapping("hnoticesavefile.do")
-//	@ResponseBody
-//	public Map<String, Object> hnoticenewsavefile(Model model, @RequestParam Map<String, Object> paramMap, HttpServletRequest request,
-//			HttpServletResponse response, HttpSession session) throws Exception {
-//		
-//		logger.info("+ Start " + className+".hnoticenewsavefile");
-//		logger.info("   - paramMap : " + paramMap+".hnoticenewsavefile");
-//		
-//		paramMap.put("loginID", (String)session.getAttribute("loginId"));
-//		
-//		String action = (String)paramMap.get("action");
-//		
-//		if("I".equals(action)){
-//			
-//			hnoticeService.hnoticenewsavefile(paramMap, request);
-//			
-//		} else if("U".equals(action)){
-//			
-//			hnoticeService.hnoticenewsavefile(paramMap, request);
-//			
-//		} else if("D".equals(action)){
-//			hnoticeService.hnoticenewsavefile(paramMap, request);
-//		}
-//		
-//		
-//		Map<String, Object> resultMap = new HashMap<String, Object>();
-//		
-//		resultMap.put("result", "SUCCESS");
-//		
-//		logger.info("+ End " + className+".hnoticenewsavefile");
-//		
-//		
-//		return resultMap;
-//	}
-//	
-//	/**
-//	 * 공지사항 단건 조회화면
-//	 */
-//	@RequestMapping("detailone.do")
-//	@ResponseBody
-//	public Map<String, Object> detailone(Model model, @RequestParam Map<String, Object> paramMap, HttpServletRequest request,
-//			HttpServletResponse response, HttpSession session) throws Exception {
-//		
-//		logger.info("+ Start " + className+".detailone");
-//		logger.info("   - paramMap : " + paramMap+".detailone");
-//		
-//		String action = (String)paramMap.get("action");
-//		
-//		HnoticeModel detailone = hnoticeService.detailone(paramMap);
-//			
-//		
-//		Map<String, Object> resultMap = new HashMap<String, Object>();
-//		
-//		resultMap.put("result", "SUCCESS");
-//		resultMap.put("detailone", detailone);
-//		
-//		logger.info("+ End " + className+".detailone");
-//		
-//		
-//		return resultMap;
-//	}
+
+	/**
+	 * 회계전표 단건 조회
+	 */
+	@RequestMapping("accSlipDetaile.do")
+	@ResponseBody
+	public Map<String, Object> accSlipDetaile(Model model, @RequestParam Map<String, Object> paramMap, HttpServletRequest request,
+			HttpServletResponse response, HttpSession session) throws Exception {
+		
+		logger.info("+ Start " + className + ".accSlipDetaile");
+		logger.info("   - paramMap : " + paramMap);
+		
+		List<AccSlipDetaileModel> accSlipDetaile = accountSlipService.accSlipDetaile(paramMap);
+		
+		Map<String, Object> resultMap = new HashMap<String, Object>();
+		
+		resultMap.put("accSlipDetaile", accSlipDetaile);
+		
+		logger.info("+ End " + className + ".accSlipDetaile");
+		
+		return resultMap;
+	}
 
 }

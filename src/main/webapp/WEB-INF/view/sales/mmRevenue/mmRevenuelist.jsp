@@ -54,28 +54,28 @@
 			<tr>
 			<th scope="row">주문건수</th>
 				<c:forEach items="${mmRevenuelist1}" var="list">
-					<td scope="col">${list.order_amt}</td>
+					<td scope="col">${list.order_amt} (건)</td>
 				</c:forEach>
 			</tr>
 			
 			<tr>
 			<th scope="row">매출</th>
 				<c:forEach items="${mmRevenuelist1}" var="list">
-					<td scope="col">${list.outgo}</td>
+					<td scope="col"><fmt:formatNumber value="${list.outgo}" pattern="#,###"/></td>
 				</c:forEach>
 			</tr>
 	
 			<tr>
 			<th scope="row">영업비</th>
 				<c:forEach items="${mmRevenuelist1}" var="list">
-					<td scope="col">${list.sales_exp}</td>
+					<td scope="col"><fmt:formatNumber value="${list.sales_exp}" pattern="#,###"/></td>
 				</c:forEach>
 			</tr>		
 	
 			<tr>
 			<th scope="row">영업이익</th>
 				<c:forEach items="${mmRevenuelist1}" var="list">
-					<td scope="col">${list.sales_profit}</td>
+					<td scope="col"><fmt:formatNumber value="${list.sales_profit}" pattern="#,###"/></td>
 				</c:forEach>
 			</tr>
 			
