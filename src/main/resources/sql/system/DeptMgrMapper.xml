@@ -33,7 +33,7 @@
 	<!-- 부서 정보 저장 -->
 	<insert id="deptnewsave">
 	     <selectKey resultType="int" keyProperty="detail_code" order="BEFORE">
-             select ifnull(max(detail_code),0) + 1 from tb_detail_code where group_code = 'dept_cd'
+             select ifnull(max(cast((detail_code) as unsigned)),0) + 1  from tb_detail_code where group_code = 'dept_cd'
          </selectKey> 
 			   insert into tb_detail_code
 			               (
@@ -53,7 +53,7 @@
 	</insert>
 	
 	<!-- 부서 정보 수정 -->
-	<update id="deptnewupdate">
+	<update id="deptnewupdate"> 
 		update tb_detail_code
      	   set detail_name = #{detail_name}
    		 where group_code = 'dept_cd' 
@@ -84,6 +84,14 @@
 			  from tb_userinfo
 			 where dept_cd = #{dept_cd}	   
 	</select>
+	
+     <!-- 부서명 중복검사 -->
+	<select id="check_dept" parameterType="String" resultType="int">
+		SELECT count(*)
+		  FROM tb_detail_code
+		 WHERE group_code = 'dept_cd'
+       	   and detail_name = #{detail_name}
+	</select>	
 	
 	
 </mapper>

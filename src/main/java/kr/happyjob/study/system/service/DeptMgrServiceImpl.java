@@ -6,7 +6,6 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import kr.happyjob.study.hwang.model.HnoticeModel;
 import kr.happyjob.study.system.dao.DeptMgrDao;
 import kr.happyjob.study.system.model.DeptMgrModel;
 
@@ -57,5 +56,12 @@ public class DeptMgrServiceImpl implements DeptMgrService {
 		
 		return deptMgrDao.countindept(paramMap);
 	}
+	
+	/** 부서명 중복체크*/
+	public int check_dept(DeptMgrModel model) throws Exception {
+		int result = deptMgrDao.check_dept(model);
+		return result;
+		
+	}	
 
 }

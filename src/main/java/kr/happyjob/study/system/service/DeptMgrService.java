@@ -3,7 +3,6 @@ package kr.happyjob.study.system.service;
 import java.util.List;
 import java.util.Map;
 
-import kr.happyjob.study.hwang.model.HnoticeModel;
 import kr.happyjob.study.system.model.DeptMgrModel;
 
 public interface DeptMgrService {
@@ -28,5 +27,8 @@ public interface DeptMgrService {
 	
 	/** 부서 인원 카운트 조회 */
 	public int countindept(Map<String, Object> paramMap) throws Exception;
+	
+	/** 부서명 중복체크*/
+	public int check_dept(DeptMgrModel model) throws Exception;	
 	
 }

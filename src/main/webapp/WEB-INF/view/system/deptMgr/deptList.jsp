@@ -12,7 +12,7 @@
 							<c:if test="${countdeptlist > 0 }">
 								<c:forEach items="${deptlist}" var="list">
 									<tr>
-										<td><a href="javascript:fn_detaildept('${list.detail_code}' ,1)">${list.detail_name}</a></td>
+										<td><a href="javascript:fn_detaildept('${list.detail_code}' ,1, '${list.detail_name}')">${list.detail_name}</a></td>
 										<td>${list.detail_code}</td>
 									</tr>
 								</c:forEach>

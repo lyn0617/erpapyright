@@ -15,7 +15,7 @@
 <script type="text/javascript">
 	
 	// 페이징 설정
-	var pageSize = 10;
+	var pageSize = 5;
 	var pageBlockSize = 5;
 	
 	/** OnLoad event */ 
@@ -24,7 +24,7 @@
 		fRegisterButtonClickEvent(); //버튼이벤트
 	
 		searchdept();
-		
+		$("#ssrcdept").val("");
 	});
 	
 	/** 버튼 이벤트 등록 */
@@ -35,30 +35,37 @@
 			var btnId = $(this).attr('id');
 			
 			switch (btnId) {
-			    case 'btnSave' :
-				fn_save();
-				break;
+				
+			    case 'btnSave' :   //저장버튼
+					fn_save();
+					break;
 			    case 'btnDelete' :
-			    	$("#action").val("D");
+			    	$("#action").val("D");  //삭제버튼
 					fn_countindept();
 					break;
-				case 'btnClose' :
+				case 'btnClose' :    //닫기 버튼
 					gfCloseModal();
+					break;
+				case 'searchbtn' :
+					$("#ssrcdept").val($("#srcdept").val());
+					$("#sscpage").val($("#cpage").val());
+					$("#sspageSize").val($("#pageSize").val());
+					searchdept($("#sscpage").val(), $("#ssrcdept").val());
 					break;
 			}
 		});
 	}
 	
 	/* 부서 정보 검색 */
-	function searchdept(cpage) {
-		
+	function searchdept(cpage, ssrcdept) {
 		cpage = cpage || 1;
-		
+		$("#srcdept").val(ssrcdept);
+		console.log(cpage, ssrcdept);
 		// 파라메터,  callback
 		var param = {
 				srcdept : $("#srcdept").val(),
 				pageSize : pageSize,
-				cpage : cpage,
+				cpage : cpage
 		}
 		console.log(param);
 		
@@ -81,18 +88,68 @@
 		callAjax("/system/deptlist.do", "post", "text", "false", param, listcallback) ;
 	}
 	
-    // 부서 등록 팝업	
+    /* 부서 등록 팝업 */	
 	function fn_openpopup() {
 		
+    	$('#thshow').hide();
+    	$('#tdshow').hide();
+    	
 		initpopup();
 		
 		gfModalPop("#deptreg");
 		
 	}
     
-    // 부서정보 저장
+    /* 부서 중복 확인 */
+    async function deptcheck(){
+    	
+    	var data1 = {"detail_name" :$("#detail_name").val()};
+
+    	alert("deptcheck안");
+    	
+    	var listcallback = function(returndata) {
+	    	var result2 = false; 
+			//console.log(returndata);
+
+			alert("listcallback안");
+			
+    		if (returndata.result > 0){
+				console.log("중복된 부서 이름");
+				alert("중복된 부서명 입니다.");
+				$('#detail_name').val('');
+				result2 = false;
+    		} else{	
+    		
+				alert("중복 안됨요");
+				result2 = true;
+    		}
+			console.log(result2);
+    		return result2;
+    	}
+  	 
+    	callAjax("/system/check_dept.do", "post", "json", false, data1, listcallback) ;
+    	
+		alert("if문 밖");
+  		/* if(listcallback() != undefined){
+  			alert("if문 안");
+	    	//return listcallback();
+  		} */
+    }
+    
+    /* 부서정보 저장 */
 	function fn_save(data) {
-		
+			
+     	if($("#action").val() != "D"){
+					
+     		//console.log(deptcheck()); 
+			if(!deptcheck()) {
+				alert("중복임");
+				return ;
+			}
+			alert("$(action).val() != 'D'");
+    	} 
+		alert("fn_save");
+    	
 		if(!fValidate()) {
 			return;
 		}
@@ -114,15 +171,18 @@
 			console.log(  JSON.stringify(returndata) );
 			
 			if(returndata.result == "SUCCESS") {
-				alert("저장 되었습니다.");
-				gfCloseModal();
 				
 				if($("#action").val() == "U") {
+					alert("수정 되었습니다.");
 					searchdept($("#currentpage").val());
-				} else {
+				} else if ($("#action").val() == "D") {
+					alert("삭제 되었습니다.");
 					searchdept();
+				} else{
+					alert("저장 되었습니다.");
 				}
-				
+				searchdept($("#currentpage").val());
+				gfCloseModal();
 			}
 		}
 		
@@ -130,6 +190,7 @@
 		
 	}
     
+    /* Validation (값 입력 안했을 때)  */
     function fValidate() {
     	
 		var chk = checkNotEmpty(
@@ -145,8 +206,9 @@
 		return true;
 	}
     
+    /* 모달 창 띄우기 */
 	function initpopup(object) {	
-		
+		//등록시  저장,취소 버튼만 뜸
 		if( object == "" || object == null || object == undefined) {
 			
 			$("#detail_name").val("");
@@ -155,6 +217,7 @@
 			$("#btnDelete").hide();
 			
 			$("#action").val("I");
+		//수정시 저장,삭제,취소버튼 뜸 
 		} else {			
 			
 			$("#detail_name").val(object.detail_name);
@@ -171,6 +234,9 @@
 	// 부서 상세정보 조회
     function fn_detaildept(detail_code,popuptype) {
     	
+    	$("#thshow").show();
+    	$("#tdshow").show();
+		
 		$("#countindept").val(detail_code);
 		
     	var param = {
@@ -193,7 +259,8 @@
     	callAjax("/system/detaildept.do", "post", "json", "false", param, detaildeptcallback) ;
     } 
 	
-	function fn_countindept(){
+	
+	function fn_countindept(){ // 삭제 시 부서에 인원이 존재하는지 확인하는 함수
 		
 		var param = {
 				dept_cd : $("#countindept").val()
@@ -217,6 +284,9 @@
 	<input type="hidden" name="userNm" id="userNm" value="${userNm}">
 	<input type="hidden" name="currentpage" id="currentpage" value="">
 	<input type="hidden" name="countindept" id="countindept" value="">
+	<input type="hidden" name="ssrcdept" id="ssrcdept" value="">
+	<input type="hidden" name="sscpage" id="sscpage" value="">
+	<input type="hidden" name="sspageSize" id="sspageSize" value="">
 	
 	<!-- 모달 배경 -->
 	<div id="mask"></div>
@@ -254,7 +324,7 @@
 						
 						<input type="text" id="srcdept" name="srcdept" style="width: 150px; height: 25px;"/>
 								
-						<a	class="btnType blue" href="javascript:searchdept();" name="modal" ><span>검색</span></a>
+						<a	class="btnType blue" href="" id="searchbtn" name="btn" ><span>검색</span></a>
 							<c:if test ="${sessionScope.userType eq 'A'}">
 								<a	class="btnType blue" href="javascript:fn_openpopup();" name="modal"><span>등록</span></a>
 							</c:if>	
@@ -291,76 +361,100 @@
 		</div>
 	</div>
 	
+	
+	
+	<!-- 부서 등록, 수정 모달창 -->
+<c:choose>
+			
+	<c:when test = "${sessionScope.userType eq 'A'}">
+	
 		<div id="deptreg" class="layerPop layerType2" style="width: 600px;">
-	     <dl>
-			<dt>
-			
-				<c:choose>
-			
-			         <c:when test = "${sessionScope.userType eq 'A'}">
-			         	<strong>부서 등록/수정</strong>   
-			         </c:when>
-					 		
-			         <c:otherwise>
-			         	<strong>부서 조회</strong>   
-			         </c:otherwise>
-			    </c:choose>
-			    
-
-			</dt>
-			<dd class="content">
-				<!-- s : 여기에 내용입력 -->
-				<table class="row">
-					<caption>caption</caption>
-					<colgroup>
-						<col width="120px">
-						<col width="*">
-						<col width="120px">
-						<col width="*">
-					</colgroup>
-
-					<tbody>
-						<tr>
-							<th scope="row">부서명 <span class="font_red">*</span></th>
-							  <c:choose>
-						      	 <c:when test = "${sessionScope.userType eq 'A'}">
-						            <td><input type="text" class="inputTxt p100" name="detail_name" id="detail_name" /></td>
-						         </c:when>			
-						         <c:otherwise>
-						            <td><input type="text" class="inputTxt p100" name="detail_name" id="detail_name" readonly /></td>
-						         </c:otherwise>
-						      </c:choose>
+			<dl>
+				<dt>
+					<strong>부서 등록/수정</strong>
+				</dt>
+		<dd class="content">
+		
+		<!-- s : 여기에 내용입력 -->
+		<table class="row">
+			<caption>caption</caption>
+				<colgroup>
+					<col width="120px">
+					<col width="*">
+					<col width="120px">
+					<col width="*">
+				</colgroup>
+		
+			<tbody>
+			<tr>
+				<th scope="row">부서명 <span class="font_red">*</span></th>
+				<td><input type="text" class="inputTxt p100" name="detail_name" id="detail_name" /></td>
+				<th scope="row" id="thshow">부서코드 <span class="font_red">*</span></th>
+				<td id="tdshow"><input type="text"  class="inputTxt p100" name="detail_code" id="detail_code" readonly /></td>									
+		</tr>	
+			</tbody>
+		</table>
+		
+		<div class="btn_areaC mt30">
+		
+			<a href="" class="btnType blue" id="btnSave" name="btn"><span>저장</span></a> 
+			<a href="" class="btnType blue" id="btnDelete" name="btn"><span>삭제</span></a>
+			<a href=""	class="btnType gray"  id="btnClose" name="btn"><span>취소</span></a> 			            
 							
-							<th scope="row">부서코드 <span class="font_red">*</span></th>
-							<td><input type="text" class="inputTxt p100" name="detail_code" id="detail_code" readonly /></td>
-						</tr>	
-					</tbody>
-				</table>
-
-				<!-- e : 여기에 내용입력 -->
-
-				<div class="btn_areaC mt30">
-			      <c:choose>
-			
-			         <c:when test = "${sessionScope.userType eq 'A'}">
-						<a href="" class="btnType blue" id="btnSave" name="btn"><span>저장</span></a> 
-						<a href="" class="btnType blue" id="btnDelete" name="btn"><span>삭제</span></a>
-						<a href=""	class="btnType gray"  id="btnClose" name="btn"><span>취소</span></a> 			            
-			         </c:when>
-			
-			         <c:otherwise>
-			         	<a href=""	class="btnType gray"  id="btnClose" name="btn"><span>확인</span></a>   
-			         </c:otherwise>
-			      </c:choose>
-				
-					
-				</div>
-			</dd>
+		</div>
+		 
+		</dd>
 		</dl>
 		<a href="" class="closePop"><span class="hidden">닫기</span></a>
-	
-	
-	</div>
+			
+			
+		</div>
+	  
+	</c:when>
+						 		
+	<c:otherwise>
+		<div id="deptreg" class="layerPop layerType2" style="width: 600px;">
+			<dl>
+			<dt>
+				<strong>부서 조회</strong>
+			</dt>
+		<dd class="content">
+		<!-- s : 여기에 내용입력 -->
+		<table class="row">
+			<caption>caption</caption>
+			<colgroup>
+				<col width="120px">
+				<col width="*">
+				<col width="120px">
+				<col width="*">
+			</colgroup>
+		
+			<tbody>
+				<tr>
+					<th scope="row">부서명 <span class="font_red">*</span></th>
+					<td><input type="text" class="inputTxt p100" name="detail_name" id="detail_name" readonly /></td>
+												
+					<th scope="row">부서코드 <span class="font_red">*</span></th>
+					<td><input type="text" class="inputTxt p100" name="detail_code" id="detail_code" readonly /></td>
+				</tr>	
+			</tbody>
+		</table>
+		
+			<div class="btn_areaC mt30">
+				<a href=""	class="btnType gray"  id="btnClose" name="btn"><span>확인</span></a>		            					
+			</div>
+		
+			</dd>
+			</dl>
+			
+			<a href="" class="closePop"><span class="hidden">닫기</span></a>
+			
+			
+		</div>
+	   
+	</c:otherwise>
+
+</c:choose>
 	
 
 	

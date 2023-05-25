@@ -14,10 +14,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import kr.happyjob.study.hwang.model.HnoticeModel;
+import kr.happyjob.study.login.model.LgnInfoModel;
 import kr.happyjob.study.system.model.DeptMgrModel;
 import kr.happyjob.study.system.service.DeptMgrService;
 
@@ -54,6 +55,7 @@ public class DeptMgrController {
 		return "system/deptMgr/deptMgr";
 	}
 	
+	// 목록조회
 	@RequestMapping("deptlist.do")
 	public String deptlist(Model model, @RequestParam Map<String, Object> paramMap, HttpServletRequest request,
 			HttpServletResponse response, HttpSession session) throws Exception {
@@ -112,7 +114,7 @@ public class DeptMgrController {
 		returnmap.put("result", "SUCCESS");
 		
 		
-		logger.info("+ End " + className + ".hnoticesave");
+		logger.info("+ End " + className + ".deptsave");
 
 		return returnmap;
 	}		
@@ -160,6 +162,23 @@ public class DeptMgrController {
 
 		return returnmap;
 	}
+	
+	   /*부서명  중복 체크*/
+	   @RequestMapping(value="/check_dept.do", method=RequestMethod.POST)
+	   @ResponseBody
+	   public Map<String, Object> check_dept(DeptMgrModel model) throws Exception{
+		   
+		   logger.info("+ Start " + className + ".check_dept");
+		   int result = deptMgrService.check_dept(model);
+		   
+		   Map<String, Object> returnmap = new HashMap<String, Object>();
+		   
+		   returnmap.put("result", result);
+		   logger.info("      -result " + result);
+		   logger.info("+ End " + className + ".check_dept");
+		   
+		   return returnmap;
+	   }	
 	
 	
 

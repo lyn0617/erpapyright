@@ -3,7 +3,6 @@ package kr.happyjob.study.system.dao;
 import java.util.List;
 import java.util.Map;
 
-import kr.happyjob.study.hwang.model.HnoticeModel;
 import kr.happyjob.study.system.model.DeptMgrModel;
 
 public interface DeptMgrDao {
@@ -30,5 +29,7 @@ public interface DeptMgrDao {
 	/** 부서 인원 카운트 조회 */
 	public int countindept(Map<String, Object> paramMap) throws Exception;
 	
+	/** 부서명 중복체크*/
+	public int check_dept(DeptMgrModel model);	
 
 }
