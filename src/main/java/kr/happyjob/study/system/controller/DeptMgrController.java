@@ -166,18 +166,12 @@ public class DeptMgrController {
 	   /*부서명  중복 체크*/
 	   @RequestMapping(value="/check_dept.do", method=RequestMethod.POST)
 	   @ResponseBody
-	   public Map<String, Object> check_dept(DeptMgrModel model) throws Exception{
+	   public int check_dept(DeptMgrModel model) throws Exception{
 		   
 		   logger.info("+ Start " + className + ".check_dept");
 		   int result = deptMgrService.check_dept(model);
-		   
-		   Map<String, Object> returnmap = new HashMap<String, Object>();
-		   
-		   returnmap.put("result", result);
-		   logger.info("      -result " + result);
 		   logger.info("+ End " + className + ".check_dept");
-		   
-		   return returnmap;
+		   return result;
 	   }	
 	
 	
