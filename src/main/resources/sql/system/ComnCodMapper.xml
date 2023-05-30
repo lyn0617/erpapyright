@@ -66,6 +66,7 @@
 		/*kr.happy.study.system.dao.ComnCodDao.selectComnGrpCod*/
 		SELECT			TA.group_code as grp_cod
 			,	TA.group_name as grp_cod_nm
+			,   TA.note AS grp_cod_eplti
 			,	TA.use_yn as use_poa
 			,	TA.reg_date as fst_enlm_dtt
 			,	TA.regId as fst_rgst_sst_id
@@ -103,7 +104,7 @@
 		/*kr.happy.study.system.dao.ComnCodDao.updateComnGrpCod*/
 		UPDATE tb_group_code  SET
 				group_name = #{grp_cod_nm}
-			,	use_yn = #{grp_use_poa}
+			,	use_yn = #{use_poa}
 			,   note = #{grp_cod_eplti}
 			,	update_date = NOW()
 			,	updateId = #{fnl_mdfr_sst_id}
